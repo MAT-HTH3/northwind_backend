@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./northwind.db"
 
     gemini_api_key: SecretStr
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3.5-flash-lite"
 
 
 @lru_cache
