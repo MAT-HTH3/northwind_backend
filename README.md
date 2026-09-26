@@ -41,6 +41,7 @@ src/
   repositories/    data access used by the graph and routes; methods flush, callers commit
   legacy/          mock Legacy Systems (Legacy Billing, Metering, CRM, CaseTrack) + fixtures
   schemas/         request/response models shared with the widget contract
+  agent/           LangGraph support graph: state, nodes, checkpointer, turn helpers
   api/routes/      HTTP endpoints
 alembic/           database migrations
 ```
