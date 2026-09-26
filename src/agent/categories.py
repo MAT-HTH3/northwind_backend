@@ -25,14 +25,17 @@ class Routing:
     priority: Priority
     sla_days: int
     queue: str
+    team: str  # how the AI Assistant names the queue to the customer
 
 
 ROUTING: dict[Category, Routing] = {
-    "Supply fault - repair needed": Routing(Priority.HIGH, 5, "Field engineers"),
-    "Meter fault": Routing(Priority.MID, 10, "Metering team"),
-    "Meter reading review": Routing(Priority.MID, 10, "Billing specialists"),
-    "Billing - estimated read": Routing(Priority.MID, 10, "Billing specialists"),
-    "Billing - dispute or refund": Routing(Priority.MID, 10, "Billing specialists"),
-    "Billing - payment arrangement": Routing(Priority.LOW, 20, "Billing specialists"),
-    "General enquiry": Routing(Priority.LOW, 20, "Customer care"),
+    "Supply fault - repair needed": Routing(Priority.HIGH, 5, "Field engineers", "engineers"),
+    "Meter fault": Routing(Priority.MID, 10, "Metering team", "metering team"),
+    "Meter reading review": Routing(Priority.MID, 10, "Billing specialists", "billing team"),
+    "Billing - estimated read": Routing(Priority.MID, 10, "Billing specialists", "billing team"),
+    "Billing - dispute or refund": Routing(Priority.MID, 10, "Billing specialists", "billing team"),
+    "Billing - payment arrangement": Routing(
+        Priority.LOW, 20, "Billing specialists", "billing team"
+    ),
+    "General enquiry": Routing(Priority.LOW, 20, "Customer care", "customer care team"),
 }

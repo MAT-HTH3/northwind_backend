@@ -15,5 +15,7 @@ class GraphContext:
 
     session_factory: async_sessionmaker[AsyncSession]
     legacy: LegacySystems
-    categorizer_llm: BaseChatModel
-    resolver_llm: BaseChatModel
+    categorizer_llm: BaseChatModel  # classifies (GEMINI_MODEL)
+    resolver_llm: (
+        BaseChatModel  # writes for people: replies and case summaries (GEMINI_RESOLVER_MODEL)
+    )
