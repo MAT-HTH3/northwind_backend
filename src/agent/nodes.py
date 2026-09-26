@@ -1,6 +1,6 @@
-"""Graph nodes. The Unified Desktop is a stub for now (#19)."""
+"""Graph nodes. Each node is thin; the logic lives in its own module."""
 
-from datetime import timedelta
+from datetime import date
 from typing import Literal
 
 from langchain_core.messages import AIMessage, HumanMessage
@@ -11,9 +11,8 @@ from src.agent.auto_resolver import respond
 from src.agent.categorizer import categorize
 from src.agent.context import GraphContext
 from src.agent.state import ResumeValue, SupportState, history_from
+from src.agent.unified_desktop import hand_off, reply
 from src.history import build_history
-from src.models import Priority
-from src.models.types import utcnow
 from src.repositories import SupportCaseRepository
 
 GraphRuntime = Runtime[GraphContext]
@@ -59,23 +58,23 @@ def route_after_auto_resolver(state: SupportState) -> Literal["resolver_tools", 
 
 
 async def unified_desktop(state: SupportState, runtime: GraphRuntime) -> dict:
-    # TODO(#19): category table, join an open case, AI summary, reading receipt, case card.
-    async with runtime.context.session_factory() as session:
-        case = await SupportCaseRepository(session).create(
-            account_id=state["account_id"],
-            conversation_id=state["conversation_id"],
-            category="General enquiry",
-            priority=Priority.LOW,
-            sla_days=20,
-            queue="Customer care",
-            expected_response_by=(utcnow() + timedelta(days=20)).date(),
-            summary="(summary not built yet)",
-        )
-        await session.commit()
+    """Hands the request to a Human Agent, then the graph waits at the hold."""
+    result = await hand_off(
+        session_factory=runtime.context.session_factory,
+        llm=runtime.context.resolver_llm,
+        account_id=state["account_id"],
+        conversation_id=state["conversation_id"],
+        category=state.get("category"),
+        meter_reading=state.get("meter_reading"),
+        messages=state["messages"],
+        history=history_from(state),
+        today=date.today(),
+    )
     return {
-        "case_id": case.id,
+        "case_id": result.case.id,
         "case_outcome": None,
-        "messages": [AIMessage(f"I've passed this to our team. Your case number is {case.id}.")],
+        "meter_reading": None,
+        "messages": [reply(result)],
     }
 
 
