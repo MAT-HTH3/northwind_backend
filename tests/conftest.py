@@ -18,11 +18,16 @@ from src.core.db import Base  # noqa: E402
 
 
 @pytest.fixture
-async def session() -> AsyncIterator[AsyncSession]:
+async def session_factory() -> AsyncIterator[async_sessionmaker[AsyncSession]]:
     """A fresh in-memory SQLite database per test."""
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", poolclass=StaticPool)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    async with async_sessionmaker(engine, expire_on_commit=False)() as session:
-        yield session
+    yield async_sessionmaker(engine, expire_on_commit=False)
     await engine.dispose()
+
+
+@pytest.fixture
+async def session(session_factory) -> AsyncIterator[AsyncSession]:
+    async with session_factory() as session:
+        yield session
