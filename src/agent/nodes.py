@@ -29,7 +29,7 @@ async def analyzer(state: SupportState, runtime: GraphRuntime) -> dict:
 
 async def categorizer(state: SupportState, runtime: GraphRuntime) -> dict:
     result = await categorize(
-        runtime.context.llm,
+        runtime.context.categorizer_llm,
         state["messages"],
         history_from(state),
         force_handoff=state.get("force_handoff", False),
@@ -49,7 +49,7 @@ def route_after_categorizer(state: SupportState) -> Literal["auto_resolver", "un
 
 async def auto_resolver(state: SupportState, runtime: GraphRuntime) -> dict:
     """Answers a Self-service request. Loops through the tools node while Gemini calls tools."""
-    reply = await respond(runtime.context.llm, state["messages"], history_from(state))
+    reply = await respond(runtime.context.resolver_llm, state["messages"], history_from(state))
     return {"messages": [reply]}
 
 

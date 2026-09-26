@@ -25,11 +25,14 @@ ISO_DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
 @pytest.fixture
 def context(session_factory):
     # The test conftest sets a dummy key in the environment; read the real one from .env.
-    gemini = ChatGoogleGenerativeAI(
-        model=os.getenv("GEMINI_MODEL", get_settings().gemini_model),
-        api_key=dotenv_values(".env")["GEMINI_API_KEY"],
+    key = dotenv_values(".env")["GEMINI_API_KEY"]
+    settings = get_settings()
+    return GraphContext(
+        session_factory=session_factory,
+        legacy=get_legacy_systems(),
+        categorizer_llm=ChatGoogleGenerativeAI(model=settings.gemini_model, api_key=key),
+        resolver_llm=ChatGoogleGenerativeAI(model=settings.gemini_resolver_model, api_key=key),
     )
-    return GraphContext(session_factory=session_factory, legacy=get_legacy_systems(), llm=gemini)
 
 
 async def ask(context, message):

@@ -3,7 +3,6 @@ from datetime import date
 import pytest
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
-from src.agent.context import GraphContext
 from src.agent.graph import build_graph
 from src.agent.state import history_from
 from src.agent.turns import thread_config, turn_input
@@ -11,7 +10,7 @@ from src.history import UnknownCustomerError, build_history
 from src.legacy import get_legacy_systems
 from src.models import Priority, Service
 from src.repositories import ReadingRepository, SupportCaseRepository
-from tests.fakes import FakeLLM
+from tests.fakes import fake_context
 
 ACCOUNT = "ACC-372876"
 
@@ -105,9 +104,7 @@ async def test_unknown_customer_raises(session_factory):
 
 
 async def test_the_analyzer_puts_a_reloadable_history_in_state(session_factory, tmp_path):
-    context = GraphContext(
-        session_factory=session_factory, legacy=get_legacy_systems(), llm=FakeLLM()
-    )
+    context = fake_context(session_factory)
     path = str(tmp_path / "checkpoints.db")
     async with AsyncSqliteSaver.from_conn_string(path) as saver:
         graph = build_graph(saver)

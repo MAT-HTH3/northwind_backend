@@ -15,4 +15,5 @@ class GraphContext:
 
     session_factory: async_sessionmaker[AsyncSession]
     legacy: LegacySystems
-    llm: BaseChatModel
+    categorizer_llm: BaseChatModel
+    resolver_llm: BaseChatModel

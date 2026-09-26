@@ -4,6 +4,8 @@ from langchain_core.messages import AIMessage, AnyMessage
 from langchain_core.runnables import RunnableLambda
 
 from src.agent.categorizer import Categorization
+from src.agent.context import GraphContext
+from src.legacy import get_legacy_systems
 
 FAKE_REPLY = "fake reply"
 
@@ -44,3 +46,14 @@ class FakeLLM:
             return self.replies.pop(0) if self.replies else AIMessage(FAKE_REPLY)
 
         return RunnableLambda(run)
+
+
+def fake_context(session_factory, llm: FakeLLM | None = None) -> GraphContext:
+    """A graph context with one fake standing in for both Gemini models."""
+    llm = llm or FakeLLM()
+    return GraphContext(
+        session_factory=session_factory,
+        legacy=get_legacy_systems(),
+        categorizer_llm=llm,
+        resolver_llm=llm,
+    )

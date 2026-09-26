@@ -6,7 +6,6 @@ from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langgraph.checkpoint.memory import InMemorySaver
 
 from src.agent.bill_breakdown import BillNotFoundError, build_bill_breakdown
-from src.agent.context import GraphContext
 from src.agent.graph import build_graph
 from src.agent.transcript import recent_messages
 from src.agent.turns import is_held, thread_config, turn_input
@@ -14,7 +13,7 @@ from src.history import build_history
 from src.history.models import Tariff
 from src.legacy import get_legacy_systems
 from src.schemas.bill import BillBreakdown
-from tests.fakes import FakeLLM
+from tests.fakes import FakeLLM, fake_context
 
 ACCOUNT = "ACC-372876"
 
@@ -93,7 +92,7 @@ async def test_bill_question_calls_the_tool_then_answers(session_factory):
             AIMessage("Your bill is **£169.60**, mainly because it's estimated."),
         ]
     )
-    context = GraphContext(session_factory=session_factory, legacy=get_legacy_systems(), llm=llm)
+    context = fake_context(session_factory, llm)
     graph = build_graph(InMemorySaver())
 
     payload = await turn_input(
@@ -122,7 +121,7 @@ async def test_an_unknown_bill_goes_back_to_gemini_instead_of_crashing(session_f
             AIMessage("I can see your August and September bills."),
         ]
     )
-    context = GraphContext(session_factory=session_factory, legacy=get_legacy_systems(), llm=llm)
+    context = fake_context(session_factory, llm)
     graph = build_graph(InMemorySaver())
 
     payload = await turn_input(

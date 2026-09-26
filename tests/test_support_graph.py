@@ -6,17 +6,16 @@ from src.agent.context import GraphContext
 from src.agent.graph import build_graph
 from src.agent.nodes import acknowledgement
 from src.agent.turns import close_input, is_held, thread_config, turn_input
-from src.legacy import get_legacy_systems
 from src.models import CaseStatus
 from src.repositories import SupportCaseRepository
-from tests.fakes import FAKE_REPLY, FakeLLM
+from tests.fakes import FAKE_REPLY, fake_context
 
 ACCOUNT = "ACC-372876"
 
 
 @pytest.fixture
 def context(session_factory) -> GraphContext:
-    return GraphContext(session_factory=session_factory, legacy=get_legacy_systems(), llm=FakeLLM())
+    return fake_context(session_factory)
 
 
 @pytest.fixture

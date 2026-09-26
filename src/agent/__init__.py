@@ -9,12 +9,17 @@ from src.core.db import SessionLocal
 from src.legacy import get_legacy_systems
 
 
+def gemini(model: str) -> ChatGoogleGenerativeAI:
+    return ChatGoogleGenerativeAI(
+        model=model, api_key=get_settings().gemini_api_key.get_secret_value()
+    )
+
+
 def default_context() -> GraphContext:
     settings = get_settings()
     return GraphContext(
         session_factory=SessionLocal,
         legacy=get_legacy_systems(),
-        llm=ChatGoogleGenerativeAI(
-            model=settings.gemini_model, api_key=settings.gemini_api_key.get_secret_value()
-        ),
+        categorizer_llm=gemini(settings.gemini_model),
+        resolver_llm=gemini(settings.gemini_resolver_model),
     )
