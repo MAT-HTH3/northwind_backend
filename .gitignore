@@ -9,6 +9,5 @@ wheels/
 # Virtual environments
 .venv
 
-# Editor and office lock files
+# LibreOffice lock files
 .~lock.*#
-*.lock
