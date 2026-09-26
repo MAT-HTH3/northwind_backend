@@ -37,6 +37,8 @@ src/
   main.py          FastAPI app, CORS, routers
   core/config.py   Settings, loaded from .env
   core/db.py       async SQLAlchemy engine, session, declarative Base
+  models/          tables this service owns (Support Cases, readings, resolutions)
+  repositories/    data access used by the graph and routes; methods flush, callers commit
   api/routes/      HTTP endpoints
 alembic/           database migrations
 ```
