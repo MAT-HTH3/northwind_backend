@@ -11,6 +11,7 @@ from langchain_core.messages import AnyMessage, SystemMessage
 from pydantic import BaseModel, Field
 
 from src.agent.categories import FALLBACK, METER_READING_REVIEW, Category
+from src.agent.transcript import recent_messages
 from src.history import UnifiedCustomerHistory
 from src.models import Service
 
@@ -68,7 +69,7 @@ async def classify(
 ) -> Categorization:
     prompt = SystemMessage(SYSTEM_PROMPT.format(history=history.model_dump_json()))
     structured = llm.with_structured_output(Categorization)
-    return await structured.ainvoke([prompt, *messages[-TRANSCRIPT_WINDOW:]])
+    return await structured.ainvoke([prompt, *recent_messages(messages, TRANSCRIPT_WINDOW)])
 
 
 async def categorize(
