@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from langchain_core.language_models import BaseChatModel
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from src.legacy import LegacySystems
@@ -14,3 +15,4 @@ class GraphContext:
 
     session_factory: async_sessionmaker[AsyncSession]
     legacy: LegacySystems
+    llm: BaseChatModel

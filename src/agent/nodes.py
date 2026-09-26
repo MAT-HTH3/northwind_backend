@@ -1,5 +1,4 @@
-"""Graph nodes. Categorizer, Auto-Resolver and Unified Desktop are stubs for now; each has its
-own issue (#17, #18, #19)."""
+"""Graph nodes. Auto-Resolver and Unified Desktop are stubs for now (#18, #19)."""
 
 from datetime import timedelta
 from typing import Literal
@@ -8,8 +7,9 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.runtime import Runtime
 from langgraph.types import Command, interrupt
 
+from src.agent.categorizer import categorize
 from src.agent.context import GraphContext
-from src.agent.state import ResumeValue, SupportState
+from src.agent.state import ResumeValue, SupportState, history_from
 from src.history import build_history
 from src.models import Priority
 from src.models.types import utcnow
@@ -27,12 +27,18 @@ async def analyzer(state: SupportState, runtime: GraphRuntime) -> dict:
 
 
 async def categorizer(state: SupportState, runtime: GraphRuntime) -> dict:
-    # TODO(#17): Gemini structured output. For now only the "No" override decides.
+    result = await categorize(
+        runtime.context.llm,
+        state["messages"],
+        history_from(state),
+        force_handoff=state.get("force_handoff", False),
+    )
     return {
-        "is_self_service": not state.get("force_handoff", False),
-        "category": None,
-        "reason": "stub",
-        "force_handoff": False,
+        "is_self_service": result.is_self_service,
+        "category": result.category,
+        "reason": result.reason,
+        "meter_reading": result.meter_reading.model_dump() if result.meter_reading else None,
+        "force_handoff": False,  # the "No" override applies to one message only
     }
 
 

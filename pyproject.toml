@@ -29,6 +29,10 @@ dev = [
 pythonpath = ["."]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+filterwarnings = [
+    # Raised inside google-genai on Python 3.14; not ours to fix.
+    "ignore:.*_UnionGenericAlias.*:DeprecationWarning:google.genai.types",
+]
 
 [tool.ruff]
 line-length = 100

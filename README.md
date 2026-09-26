@@ -25,7 +25,8 @@ setting `NEXT_PUBLIC_USE_MOCK_API=false` in the front-end's `.env.local`.
 ## Develop
 
 ```bash
-uv run pytest
+uv run pytest                              # fast; Gemini is faked
+RUN_LIVE_LLM=1 uv run pytest -k live       # real Gemini calls to check the prompts
 uv run ruff check . && uv run ruff format .
 uv run alembic revision --autogenerate -m "describe the change"
 ```
