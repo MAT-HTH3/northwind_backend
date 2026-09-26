@@ -6,8 +6,10 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+import src.models  # noqa: F401  (registers every table on Base.metadata)
 from src.core.config import get_settings
 from src.core.db import Base
+from src.models.types import UTCDateTime
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -21,8 +23,16 @@ if config.config_file_name is not None:
 # The app's settings are the single source of truth for the database URL.
 config.set_main_option("sqlalchemy.url", get_settings().database_url)
 
-# Import model modules here as they are added so autogenerate can see their tables.
 target_metadata = Base.metadata
+
+
+def render_item(type_, obj, autogen_context):
+    """Render app-specific column types as plain SQLAlchemy types, so migrations never import
+    app code (which can change or disappear after the migration is written)."""
+    if type_ == "type" and isinstance(obj, UTCDateTime):
+        return "sa.DateTime(timezone=True)"
+    return False
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -49,6 +59,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         render_as_batch=True,
+        render_item=render_item,
     )
 
     with context.begin_transaction():
@@ -61,6 +72,7 @@ def do_run_migrations(connection: Connection) -> None:
         connection=connection,
         target_metadata=target_metadata,
         render_as_batch=True,
+        render_item=render_item,
     )
 
     with context.begin_transaction():
