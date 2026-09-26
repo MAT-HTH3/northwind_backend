@@ -1,0 +1,37 @@
+{
+  "_comment": "Metering. Keyed by meter point (MPAN for electricity, SPID for water). Timestamps ISO 8601 UTC; water in litres. Synthetic data.",
+  "meter_points": [
+    {
+      "mpxn": "1900012345678",
+      "service": "electricity",
+      "meter_serial": "D07L33291",
+      "smart": false,
+      "register_unit": "kWh",
+      "reads": [
+        { "read_at": "2026-03-12T10:02:00Z", "value": 46229, "source": "CUSTOMER" },
+        { "read_at": "2026-04-12T09:47:00Z", "value": 46581, "source": "CUSTOMER" },
+        { "read_at": "2026-05-12T18:21:00Z", "value": 46912, "source": "AGENT" },
+        { "read_at": "2026-06-12T09:14:00Z", "value": 47242, "source": "CUSTOMER" },
+        { "read_at": "2026-07-13T00:00:00Z", "value": 47582, "source": "ESTIMATE" },
+        { "read_at": "2026-08-13T00:00:00Z", "value": 47871, "source": "ESTIMATE" },
+        { "read_at": "2026-09-13T00:00:00Z", "value": 48357, "source": "ESTIMATE" }
+      ]
+    },
+    {
+      "mpxn": "3371092845W",
+      "service": "water",
+      "meter_serial": "WM-18A-55120",
+      "smart": false,
+      "register_unit": "litres",
+      "reads": [
+        { "read_at": "2026-03-12T10:02:00Z", "value": 557600, "source": "CUSTOMER" },
+        { "read_at": "2026-04-12T09:47:00Z", "value": 566400, "source": "CUSTOMER" },
+        { "read_at": "2026-05-12T18:21:00Z", "value": 575500, "source": "AGENT" },
+        { "read_at": "2026-06-12T09:14:00Z", "value": 584500, "source": "CUSTOMER" },
+        { "read_at": "2026-07-13T00:00:00Z", "value": 593900, "source": "ESTIMATE" },
+        { "read_at": "2026-08-13T00:00:00Z", "value": 603200, "source": "ESTIMATE" },
+        { "read_at": "2026-09-13T00:00:00Z", "value": 612400, "source": "ESTIMATE" }
+      ]
+    }
+  ]
+}

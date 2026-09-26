@@ -39,6 +39,8 @@ src/
   core/db.py       async SQLAlchemy engine, session, declarative Base
   models/          tables this service owns (Support Cases, readings, resolutions)
   repositories/    data access used by the graph and routes; methods flush, callers commit
+  legacy/          mock Legacy Systems (Legacy Billing, Metering, CRM, CaseTrack) + fixtures
+  schemas/         request/response models shared with the widget contract
   api/routes/      HTTP endpoints
 alembic/           database migrations
 ```
