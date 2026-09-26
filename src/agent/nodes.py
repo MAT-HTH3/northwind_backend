@@ -1,4 +1,4 @@
-"""Graph nodes. Auto-Resolver and Unified Desktop are stubs for now (#18, #19)."""
+"""Graph nodes. The Unified Desktop is a stub for now (#19)."""
 
 from datetime import timedelta
 from typing import Literal
@@ -7,6 +7,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.runtime import Runtime
 from langgraph.types import Command, interrupt
 
+from src.agent.auto_resolver import respond
 from src.agent.categorizer import categorize
 from src.agent.context import GraphContext
 from src.agent.state import ResumeValue, SupportState, history_from
@@ -28,7 +29,7 @@ async def analyzer(state: SupportState, runtime: GraphRuntime) -> dict:
 
 async def categorizer(state: SupportState, runtime: GraphRuntime) -> dict:
     result = await categorize(
-        runtime.context.llm,
+        runtime.context.categorizer_llm,
         state["messages"],
         history_from(state),
         force_handoff=state.get("force_handoff", False),
@@ -47,8 +48,14 @@ def route_after_categorizer(state: SupportState) -> Literal["auto_resolver", "un
 
 
 async def auto_resolver(state: SupportState, runtime: GraphRuntime) -> dict:
-    # TODO(#18): Gemini tool-calling agent with show_bill_breakdown.
-    return {"messages": [AIMessage("(Auto-Resolver not built yet)")]}
+    """Answers a Self-service request. Loops through the tools node while Gemini calls tools."""
+    reply = await respond(runtime.context.resolver_llm, state["messages"], history_from(state))
+    return {"messages": [reply]}
+
+
+def route_after_auto_resolver(state: SupportState) -> Literal["resolver_tools", "__end__"]:
+    last = state["messages"][-1]
+    return "resolver_tools" if getattr(last, "tool_calls", None) else "__end__"
 
 
 async def unified_desktop(state: SupportState, runtime: GraphRuntime) -> dict:

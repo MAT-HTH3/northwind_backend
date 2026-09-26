@@ -6,17 +6,16 @@ from src.agent.context import GraphContext
 from src.agent.graph import build_graph
 from src.agent.nodes import acknowledgement
 from src.agent.turns import close_input, is_held, thread_config, turn_input
-from src.legacy import get_legacy_systems
 from src.models import CaseStatus
 from src.repositories import SupportCaseRepository
-from tests.fakes import FakeLLM
+from tests.fakes import FAKE_REPLY, fake_context
 
 ACCOUNT = "ACC-372876"
 
 
 @pytest.fixture
 def context(session_factory) -> GraphContext:
-    return GraphContext(session_factory=session_factory, legacy=get_legacy_systems(), llm=FakeLLM())
+    return fake_context(session_factory)
 
 
 @pytest.fixture
@@ -46,7 +45,7 @@ async def test_self_service_goes_to_the_auto_resolver_and_ends(graph, context):
     state = await send(graph, context, "conv-1", "Why is my bill so high?")
 
     assert state["is_self_service"] is True
-    assert "Auto-Resolver" in state["messages"][-1].content
+    assert state["messages"][-1].content == FAKE_REPLY
     assert not await is_held(graph, "conv-1")
 
 
@@ -90,7 +89,7 @@ async def test_closing_resumes_to_the_end_and_the_conversation_is_live_again(
     assert not await is_held(graph, "conv-1")
 
     state = await send(graph, context, "conv-1", "Thanks, when is my payment due?")
-    assert "Auto-Resolver" in state["messages"][-1].content
+    assert state["messages"][-1].content == FAKE_REPLY
     assert state["case_outcome"] == "Reading verified, corrected bill sent."
 
 

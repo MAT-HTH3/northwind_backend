@@ -23,7 +23,11 @@ class Settings(BaseSettings):
     checkpoint_db_path: str = "./checkpoints.db"
 
     gemini_api_key: SecretStr
+    # The Categorizer only classifies, so the smallest model is enough.
     gemini_model: str = "gemini-3.5-flash-lite"
+    # The Auto-Resolver writes to the customer and decides when to show cards; flash-lite
+    # called the bill tool for off-topic questions in live tests, flash did not.
+    gemini_resolver_model: str = "gemini-3.5-flash"
 
 
 @lru_cache
