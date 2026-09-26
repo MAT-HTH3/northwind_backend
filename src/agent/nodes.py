@@ -1,5 +1,5 @@
-"""Graph nodes. Analyzer, Categorizer, Auto-Resolver and Unified Desktop are stubs for now;
-each has its own issue (#16, #17, #18, #19)."""
+"""Graph nodes. Categorizer, Auto-Resolver and Unified Desktop are stubs for now; each has its
+own issue (#17, #18, #19)."""
 
 from datetime import timedelta
 from typing import Literal
@@ -10,6 +10,7 @@ from langgraph.types import Command, interrupt
 
 from src.agent.context import GraphContext
 from src.agent.state import ResumeValue, SupportState
+from src.history import build_history
 from src.models import Priority
 from src.models.types import utcnow
 from src.repositories import SupportCaseRepository
@@ -18,8 +19,11 @@ GraphRuntime = Runtime[GraphContext]
 
 
 async def analyzer(state: SupportState, runtime: GraphRuntime) -> dict:
-    # TODO(#16): fan out to the Legacy Systems and our Support Cases.
-    return {"history": None}
+    """The memory bridge. Plain Python, no LLM; runs every turn so the history is never stale."""
+    history = await build_history(
+        state["account_id"], runtime.context.legacy, runtime.context.session_factory
+    )
+    return {"history": history.model_dump(mode="json")}
 
 
 async def categorizer(state: SupportState, runtime: GraphRuntime) -> dict:
