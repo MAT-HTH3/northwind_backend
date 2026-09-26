@@ -8,6 +8,7 @@ from src.agent.context import GraphContext
 from src.legacy import get_legacy_systems
 
 FAKE_REPLY = "fake reply"
+FAKE_SUMMARY = "Sarah queried her estimated September bill."
 
 
 def self_service(_messages: list[AnyMessage]) -> Categorization:
@@ -21,15 +22,18 @@ class FakeLLM:
       messages, or raises if `decide` raises.
     - `bind_tools(...)` (the Auto-Resolver) returns the scripted `replies` in order, then a plain
       text reply.
+    - `ainvoke(...)` (the case summary) returns `summary`, or raises if `summary` is an exception.
     """
 
     def __init__(
         self,
         decide: Callable[[list[AnyMessage]], Categorization] = self_service,
         replies: list[AIMessage] | None = None,
+        summary: str | Exception = FAKE_SUMMARY,
     ):
         self.decide = decide
         self.replies = list(replies or [])
+        self.summary = summary
         self.calls: list[list[AnyMessage]] = []
         self.tool_calls: list[list[AnyMessage]] = []
 
@@ -46,6 +50,11 @@ class FakeLLM:
             return self.replies.pop(0) if self.replies else AIMessage(FAKE_REPLY)
 
         return RunnableLambda(run)
+
+    async def ainvoke(self, _messages):
+        if isinstance(self.summary, Exception):
+            raise self.summary
+        return AIMessage(self.summary)
 
 
 def fake_context(session_factory, llm: FakeLLM | None = None) -> GraphContext:
