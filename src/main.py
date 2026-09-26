@@ -4,14 +4,20 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.agent import default_context
+from src.agent.checkpointer import open_checkpointer
+from src.agent.graph import build_graph
 from src.api.routes import customers, health
 from src.core.config import get_settings
 from src.core.db import engine
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
-    yield
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
+    async with open_checkpointer() as checkpointer:
+        app.state.graph = build_graph(checkpointer)
+        app.state.graph_context = default_context()
+        yield
     await engine.dispose()
 
 

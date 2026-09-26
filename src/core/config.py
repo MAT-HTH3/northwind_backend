@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     # SQLite now; switching to Postgres (Tiger Data) is a URL change, e.g. postgresql+asyncpg://...
     database_url: str = "sqlite+aiosqlite:///./northwind.db"
 
+    # LangGraph checkpoints (conversation memory, paused threads). Separate from the app database.
+    checkpoint_db_path: str = "./checkpoints.db"
+
     gemini_api_key: SecretStr
     gemini_model: str = "gemini-3.5-flash-lite"
 

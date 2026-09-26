@@ -6,4 +6,5 @@ When a Hand-off request reaches the Unified Desktop node, the graph opens (or ad
 
 - The hold is per conversation, not per customer. A new conversation while a case is open is not held. It sees the open case through the Unified Customer History, so the customer can still ask unrelated Self-service questions.
 - The widget cannot receive messages it didn't ask for, so the Case Outcome reaches the customer outside the chat. It is kept in the conversation's state and in the Unified Customer History so the AI Assistant can refer to it later.
+- The hold is a loop at the pause (Wait → Acknowledge → Wait), not a check at the start of the graph. Held customer messages are sent as `Command(resume=...)`. Starting a new run on a paused thread silently discards its pending interrupt, and the Human Agent's close would then resume nothing. So the chat endpoint must check whether the thread is paused, and resume it, before it starts a new run.
 - Paused threads live in the checkpointer. Losing checkpoint storage loses the ability to resume, which is why the checkpointer is persistent (SQLite now, Postgres later) and not in memory.
