@@ -11,3 +11,9 @@ wheels/
 
 # LibreOffice lock files
 .~lock.*#
+
+# Local config and data
+.env
+*.db
+*.db-shm
+*.db-wal

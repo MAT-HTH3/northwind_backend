@@ -1,0 +1,9 @@
+# Hand-off is a real LangGraph interrupt, and a Support Case can hold many conversations
+
+When a Hand-off request reaches the Unified Desktop node, the graph opens (or adds to) a Support Case and calls `interrupt()`, suspending the conversation's thread until a Human Agent closes the case with a Case Outcome. Everything else hangs off that choice. While the thread is suspended the conversation is held: new customer messages are added to the case and get a fixed acknowledgement, and the AI Assistant takes no action, so it can never contradict the Human Agent. A later conversation with a hand-off in the same category is added to the already-open case instead of opening a duplicate, so one case can link several conversations. Closing the case resumes every linked thread. We chose this over "create a case and end the graph" because it makes the human-in-the-loop step explicit in the graph and puts ownership of the conversation in one place, and because duplicate cases for one problem are the reopen pattern this project exists to remove.
+
+## Consequences
+
+- The hold is per conversation, not per customer. A new conversation while a case is open is not held. It sees the open case through the Unified Customer History, so the customer can still ask unrelated Self-service questions.
+- The widget cannot receive messages it didn't ask for, so the Case Outcome reaches the customer outside the chat. It is kept in the conversation's state and in the Unified Customer History so the AI Assistant can refer to it later.
+- Paused threads live in the checkpointer. Losing checkpoint storage loses the ability to resume, which is why the checkpointer is persistent (SQLite now, Postgres later) and not in memory.
