@@ -25,6 +25,8 @@ class SupportState(TypedDict, total=False):
     is_self_service: bool
     category: str | None
     reason: str | None
+    # A meter reading given in the current message ({"service", "value"}), for the hand-off.
+    meter_reading: dict[str, Any] | None
 
     # The Support Case holding this conversation, and how the Human Agent closed it.
     case_id: str | None
