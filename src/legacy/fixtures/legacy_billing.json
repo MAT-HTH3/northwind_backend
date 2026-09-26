@@ -1,0 +1,53 @@
+{
+  "_comment": "Legacy Billing (Dunmoor platform). Money in pence, dates DDMMYYYY, codes upper-case. Synthetic data.",
+  "ACCOUNTS": [
+    {
+      "ACCT_NO": "0372876",
+      "PAY_METHOD": "DD",
+      "DD_DAY": 5,
+      "INVOICES": [
+        {
+          "INV_REF": "INV-2609-372876",
+          "PERIOD_FROM": "14082026",
+          "PERIOD_TO": "13092026",
+          "ISSUED": "15092026",
+          "DUE": "05102026",
+          "READ_TYPE": "E",
+          "TOTAL_PENCE": 16960,
+          "PAID": "N",
+          "LINES": [
+            { "SVC": "ELEC", "DESC": "ELECTRICITY UNITS", "QTY": 486, "UOM": "KWH", "RATE_PENCE": 24.86, "AMT_PENCE": 12082 },
+            { "SVC": "ELEC", "DESC": "ELEC STANDING CHG", "QTY": 31, "UOM": "DAY", "RATE_PENCE": 53.35, "AMT_PENCE": 1654 },
+            { "SVC": "WATR", "DESC": "WATER SUPPLY+WASTE", "QTY": 9.2, "UOM": "M3", "RATE_PENCE": 205.0, "AMT_PENCE": 1886 },
+            { "SVC": "WATR", "DESC": "WATER STANDING CHG", "QTY": 31, "UOM": "DAY", "RATE_PENCE": 21.0, "AMT_PENCE": 651 },
+            { "SVC": "TAX", "DESC": "VAT 5% ENERGY", "AMT_PENCE": 687 }
+          ]
+        },
+        {
+          "INV_REF": "INV-2608-372876",
+          "PERIOD_FROM": "14072026",
+          "PERIOD_TO": "13082026",
+          "ISSUED": "15082026",
+          "DUE": "05092026",
+          "READ_TYPE": "E",
+          "TOTAL_PENCE": 11839,
+          "PAID": "Y",
+          "LINES": [
+            { "SVC": "ELEC", "DESC": "ELECTRICITY UNITS", "QTY": 289, "UOM": "KWH", "RATE_PENCE": 24.86, "AMT_PENCE": 7185 },
+            { "SVC": "ELEC", "DESC": "ELEC STANDING CHG", "QTY": 31, "UOM": "DAY", "RATE_PENCE": 53.35, "AMT_PENCE": 1654 },
+            { "SVC": "WATR", "DESC": "WATER SUPPLY+WASTE", "QTY": 9.3, "UOM": "M3", "RATE_PENCE": 205.0, "AMT_PENCE": 1907 },
+            { "SVC": "WATR", "DESC": "WATER STANDING CHG", "QTY": 31, "UOM": "DAY", "RATE_PENCE": 21.0, "AMT_PENCE": 651 },
+            { "SVC": "TAX", "DESC": "VAT 5% ENERGY", "AMT_PENCE": 442 }
+          ]
+        }
+      ],
+      "TARIFF_HISTORY": [
+        { "SVC": "ELEC", "COMPONENT": "UNIT", "EFFECTIVE": "01012026", "RATE_PENCE": 24.10 },
+        { "SVC": "ELEC", "COMPONENT": "UNIT", "EFFECTIVE": "01072026", "RATE_PENCE": 24.86 },
+        { "SVC": "ELEC", "COMPONENT": "STANDING", "EFFECTIVE": "01012026", "RATE_PENCE": 53.35 },
+        { "SVC": "WATR", "COMPONENT": "UNIT", "EFFECTIVE": "01042026", "RATE_PENCE": 205.0 },
+        { "SVC": "WATR", "COMPONENT": "STANDING", "EFFECTIVE": "01042026", "RATE_PENCE": 21.0 }
+      ]
+    }
+  ]
+}

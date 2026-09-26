@@ -1,0 +1,43 @@
+{
+  "_comment": "CRM. camelCase, offsets in local time. Holds the cross-references to every other Legacy System. Synthetic data.",
+  "customers": [
+    {
+      "customerId": "ACC-372876",
+      "name": { "given": "Sarah", "family": "Whitfield" },
+      "region": "Dunmoor",
+      "contact": { "email": "sarah.whitfield@example.com", "phone": "07700 900123", "preferredChannel": "chat" },
+      "services": [
+        { "type": "electricity", "status": "active", "since": "2019-04-01" },
+        { "type": "water", "status": "active", "since": "2019-04-01" }
+      ],
+      "crossReferences": {
+        "legacyBillingAccount": "0372876",
+        "caseTrackCustomer": "CT-00372876",
+        "meterPoints": ["1900012345678", "3371092845W"]
+      },
+      "interactions": [
+        {
+          "id": "INT-5520193",
+          "channel": "phone",
+          "occurredAt": "2026-07-20T14:02:11+01:00",
+          "handledBy": "J. Patel",
+          "summary": "Asked why the July bill was estimated. Explained no reading since June. Customer said she would send one. Transferred to CaseTrack for billing review."
+        },
+        {
+          "id": "INT-5588410",
+          "channel": "email",
+          "occurredAt": "2026-08-06T09:40:55+01:00",
+          "handledBy": "Billing inbox",
+          "summary": "Customer chased the billing review; said nobody had called back. Reply sent with case reference 88123."
+        },
+        {
+          "id": "INT-5391007",
+          "channel": "phone",
+          "occurredAt": "2026-03-02T11:15:30+00:00",
+          "handledBy": "M. Okafor",
+          "summary": "Asked to move Direct Debit collection to the 5th of the month."
+        }
+      ]
+    }
+  ]
+}

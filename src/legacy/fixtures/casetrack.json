@@ -1,0 +1,33 @@
+{
+  "_comment": "CaseTrack. Past support cases (read-only; new Support Cases are never written here). Dates YYYY/MM/DD, status and category codes. Synthetic data.",
+  "CUSTOMERS": {
+    "CT-00372876": {
+      "cases": [
+        {
+          "case_no": 88123,
+          "opened": "2026/07/21",
+          "closed": "2026/08/19",
+          "stat": "CLSD",
+          "cat_cd": "BILL-EST",
+          "queue": "BILLING-L2",
+          "reopened": 1,
+          "notes": [
+            "2026/07/21 Transferred from phone (INT-5520193). Customer queries estimated July bill.",
+            "2026/08/06 Customer chased by email. Reopened.",
+            "2026/08/19 Advised to submit a meter reading. No reading received. Closed - no further contact."
+          ]
+        },
+        {
+          "case_no": 87011,
+          "opened": "2026/03/02",
+          "closed": "2026/03/04",
+          "stat": "CLSD",
+          "cat_cd": "PAY-DD",
+          "queue": "PAYMENTS",
+          "reopened": 0,
+          "notes": ["2026/03/04 Direct Debit collection day changed to the 5th."]
+        }
+      ]
+    }
+  }
+}
