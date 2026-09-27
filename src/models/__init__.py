@@ -8,22 +8,30 @@ from src.models.reading import UNITS, CustomerReading, ReadingStatus, Service
 from src.models.resolution import ResolutionAnswer
 from src.models.support_case import (
     CaseConversation,
+    CaseSource,
     CaseStatus,
+    Channel,
+    FeedbackNote,
     HeldMessage,
     SupportCase,
+    TimelineEvent,
     Urgency,
 )
 
 __all__ = [
     "UNITS",
     "CaseConversation",
+    "CaseSource",
     "CaseStatus",
+    "Channel",
     "Conversation",
     "CustomerReading",
+    "FeedbackNote",
     "HeldMessage",
     "ReadingStatus",
     "ResolutionAnswer",
     "Service",
     "SupportCase",
+    "TimelineEvent",
     "Urgency",
 ]

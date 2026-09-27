@@ -122,6 +122,7 @@ class SupportCaseSummary(BaseModel):
     category: str
     priority: str
     status: Literal["open", "closed"]
+    stage: str  # the desk's Case Status: new, in_progress, waiting_customer, resolved
     queue: str
     opened_at: datetime
     expected_response_by: date

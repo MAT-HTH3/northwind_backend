@@ -21,12 +21,14 @@ async def history(session_factory):
     return await build_history(ACCOUNT, get_legacy_systems(), session_factory)
 
 
-def case(case_id, status="open", outcome=None, queue="Billing specialists"):
+def case(case_id, status="open", outcome=None, queue="Billing specialists", stage=None):
+    stage = stage or ("resolved" if status == "closed" else "new")
     return SupportCaseSummary(
         case_id=case_id,
         category="Billing",
         priority="P2",
         status=status,
+        stage=stage,
         queue=queue,
         opened_at=datetime(2026, 9, 20, 9, tzinfo=UTC),
         expected_response_by=date(2026, 10, 6),
@@ -43,7 +45,8 @@ def test_an_open_case_gives_its_team_and_reply_date(history):
     text = case_status_text(with_cases(history, case("NW-100001")))
 
     assert text == (
-        "Your case **NW-100001** is with our billing team. They'll reply by **Tuesday 6 October**."
+        "Your case **NW-100001** is with our billing team (not started yet). "
+        "They'll reply by **Tuesday 6 October**."
     )
 
 
@@ -52,8 +55,14 @@ def test_several_open_cases_are_all_listed(history):
         with_cases(history, case("NW-100001"), case("NW-100002", queue="Field operations"))
     )
 
-    assert "**NW-100001** is with our billing team" in text
-    assert "**NW-100002** is with our field team" in text
+    assert "**NW-100001** is with our billing team (not started yet)" in text
+    assert "**NW-100002** is with our field team (not started yet)" in text
+
+
+def test_a_case_waiting_for_the_customer_says_so(history):
+    text = case_status_text(with_cases(history, case("NW-100001", stage="waiting_customer")))
+
+    assert "(waiting for your reply)" in text
 
 
 def test_a_resolved_case_gives_its_outcome_in_plain_words(history):

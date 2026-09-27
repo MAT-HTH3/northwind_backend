@@ -107,4 +107,4 @@ async def test_a_paused_thread_survives_a_restart(context, session_factory, tmp_
     assert [m.type for m in state["messages"]] == ["human", "ai"]
     assert (await cases(session_factory))[
         0
-    ].status == CaseStatus.OPEN  # closing the case is the API's job
+    ].status == CaseStatus.NEW  # closing the case is the API's job

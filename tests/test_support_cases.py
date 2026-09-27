@@ -66,7 +66,7 @@ async def test_closing_releases_every_linked_conversation(session):
     released = await repo.close(case, "Reading verified, corrected bill of £132.01 issued.")
 
     assert released == ["conv-1", "conv-2"]
-    assert case.status == CaseStatus.CLOSED and case.closed_at is not None
+    assert case.status == CaseStatus.RESOLVED and case.closed_at is not None
     assert await repo.open_case_for_conversation("conv-1") is None
     assert await repo.open_case_for_conversation("conv-2") is None
     with pytest.raises(CaseAlreadyClosedError):

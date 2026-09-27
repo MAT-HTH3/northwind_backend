@@ -69,6 +69,13 @@ async def hand_off(
                 queue=triage.queue,
                 expected_response_by=triage.due_at.astimezone(UK).date(),
                 summary=case_summary(subject, meter_reading, messages, history),
+                opened_at=now,
+                customer_name=f"{history.customer.first_name} {history.customer.last_name}",
+                region=history.customer.region,
+                vulnerable=history.customer.vulnerable,
+                subject=subject,
+                description=customer_words(messages),
+                disputed_amount=disputed_amount,
             )
         reading = None
         if meter_reading:
