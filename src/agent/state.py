@@ -33,6 +33,9 @@ class SupportState(TypedDict, total=False):
     # What code decided about that reading: "accepted" or "needs_review" (ADR 0004).
     reading_check: str | None
 
+    # What answered the latest message, in the desk's words ("Bill explained"), set by code.
+    topic: str | None
+
     # The Support Case holding this conversation, and how the Human Agent closed it.
     case_id: str | None
     case_outcome: str | None

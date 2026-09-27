@@ -21,6 +21,7 @@ from langgraph.graph.state import CompiledStateGraph
 from src.agent.context import GraphContext
 from src.agent.turns import thread_config, turn_input
 from src.agent.unified_desktop import UI_CARDS
+from src.repositories import ConversationRepository
 
 logger = logging.getLogger(__name__)
 
@@ -87,8 +88,13 @@ async def stream_turn(
     message: str,
 ) -> AsyncIterator[str]:
     try:
+        force_handoff = await _start_turn(context, conversation_id, account_id)
         payload = await turn_input(
-            graph, conversation_id=conversation_id, account_id=account_id, message=message
+            graph,
+            conversation_id=conversation_id,
+            account_id=account_id,
+            message=message,
+            force_handoff=force_handoff,
         )
         async for mode, data in graph.astream(
             payload,
@@ -103,7 +109,35 @@ async def stream_turn(
                 events = from_update(data)
             for event, event_data in events:
                 yield sse(event, event_data)
+        await _finish_turn(graph, context, conversation_id)
         yield sse("done", {})
     except Exception:
         logger.exception("Chat turn failed for conversation %s", conversation_id)
         yield sse("error", {"message": CUSTOMER_SAFE_ERROR})
+
+
+async def _start_turn(context: GraphContext, conversation_id: str, account_id: str) -> bool:
+    """Records the conversation; returns whether this message must go to a Human Agent because
+    the customer just answered "No" (applies once)."""
+    customer = await context.legacy.crm.get_customer(account_id)
+    name = f"{customer.name.given} {customer.name.family}" if customer else account_id
+    async with context.session_factory() as session:
+        conversations = ConversationRepository(session)
+        conversation = await conversations.start(conversation_id, account_id, name)
+        force_handoff = await conversations.take_pending_handoff(conversation)
+        await session.commit()
+    return force_handoff
+
+
+async def _finish_turn(
+    graph: CompiledStateGraph, context: GraphContext, conversation_id: str
+) -> None:
+    """Records what answered the message and any Support Case, for the agent desk."""
+    state = (await graph.aget_state(thread_config(conversation_id))).values
+    async with context.session_factory() as session:
+        conversations = ConversationRepository(session)
+        conversation = await conversations.get(conversation_id)
+        await conversations.record_turn(
+            conversation, topic=state.get("topic"), case_id=state.get("case_id")
+        )
+        await session.commit()
