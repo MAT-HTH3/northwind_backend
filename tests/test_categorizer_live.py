@@ -64,3 +64,42 @@ async def test_live_categorization(gemini, message, self_service, category, read
     if category:
         assert result.category == category, result.reason
     assert (result.meter_reading.value if result.meter_reading else None) == reading
+
+
+async def test_live_a_case_question_after_a_hand_off_is_not_another_hand_off(gemini):
+    """Regression from the end-to-end run (this is that conversation): with the hand-off reply
+    hidden behind a blanket placeholder, the model took the earlier "speak to a person" as still
+    pending and opened a second case, in 4 of 5 replays."""
+    from langchain_core.messages import AIMessage, ToolMessage
+
+    from src.agent.tools import BILL_SHOWN
+    from src.agent.transcript import written_by_code
+
+    conversation = [
+        HumanMessage("Can you explain my latest bill?"),
+        AIMessage("", tool_calls=[{"id": "t1", "name": "show_bill_breakdown", "args": {}}]),
+        ToolMessage(BILL_SHOWN, tool_call_id="t1", name="show_bill_breakdown"),
+        AIMessage(
+            "Here's your latest bill. The card shows each charge, the due date and why it "
+            "changed.\n\nIf your meter shows a different number to the one used for this bill, "
+            "please send me your reading.\n\nAnything else I can help with?"
+        ),
+        HumanMessage("My meter says 48213"),
+        written_by_code(
+            "Thanks, I've recorded your electricity reading of **48,213 kWh** …",
+            summary="The assistant accepted the customer's meter reading and showed the "
+            "recalculated bill on screen.",
+        ),
+        HumanMessage("That didn't solve my problem. I'd like to speak to a person."),
+        written_by_code(
+            "I've passed this to our customer relations team … **NW-669362** …",
+            summary="The assistant passed the conversation to a person and showed the case number.",
+        ),
+        HumanMessage("What happened with my case?"),
+    ]
+
+    results = [await categorize(gemini, conversation, force_handoff=False) for _ in range(3)]
+
+    assert all(r.is_self_service and r.case_status_request for r in results), [
+        r.reason for r in results
+    ]

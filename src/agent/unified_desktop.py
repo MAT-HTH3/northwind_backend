@@ -183,7 +183,10 @@ def reply(result: HandOff) -> AIMessage:
             f"**{due}**."
         )
     cards.append(case_card(case))
-    return written_by_code("\n\n".join(parts), **{UI_CARDS: cards})
+    summary = "The assistant passed the conversation to a person and showed the case number."
+    if result.reading is not None:
+        summary = "The customer's meter reading needs checking. " + summary
+    return written_by_code("\n\n".join(parts), summary=summary, **{UI_CARDS: cards})
 
 
 def _long_date(value: date) -> str:
