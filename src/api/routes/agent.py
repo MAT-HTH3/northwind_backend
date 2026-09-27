@@ -11,12 +11,14 @@ from src.agent.context import GraphContext
 from src.agent.turns import close_input, is_held, thread_config
 from src.api.deps import get_graph, get_graph_context
 from src.desk import records
+from src.desk.seed import reset_demo
 from src.desk.transcript import transcript
 from src.history import UnknownCustomerError, build_history
-from src.models import CaseStatus, Urgency
+from src.models import CaseStatus, SeedExtra, Urgency
 from src.models.types import utcnow
 from src.repositories import CaseChanges, ConversationRepository, SupportCaseRepository
 from src.schemas.agent import (
+    AccountSnapshot,
     AgentCase,
     CaseDetail,
     CaseUpdate,
@@ -25,6 +27,7 @@ from src.schemas.agent import (
     FeedbackRequest,
     QueueFeedback,
     QueueSnapshot,
+    TranscriptEntry,
 )
 
 router = APIRouter(prefix="/agent", tags=["agent desk"])
@@ -72,12 +75,19 @@ async def case_detail(case_id: str, graph: Graph, context: Context) -> CaseDetai
         )
     if conversation_ids:  # chat cases: every conversation the case gathered, in order
         entries = [e for cid in conversation_ids for e in await transcript(graph, cid)]
-        detail.transcript = sorted(entries, key=lambda e: e.at)
+        detail.transcript = sorted(entries, key=lambda e: e.at) or None
     try:
         history = await build_history(case.account_id, context.legacy, context.session_factory)
         detail.account = records.account_snapshot(history)
     except UnknownCustomerError:
         pass
+    if detail.transcript is None or detail.account is None:  # a seeded case (demo data)
+        extra = await _seed_extra(context, "case", case_id)
+        if extra is not None:
+            detail.transcript = detail.transcript or _transcript(extra.transcript)
+            detail.account = detail.account or (
+                AccountSnapshot.model_validate(extra.account) if extra.account else None
+            )
     return detail
 
 
@@ -91,9 +101,11 @@ async def conversation_detail(
         if conversation is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Conversation not found")
         summary = records.assistant_conversation(conversation, await repo.outcome(conversation_id))
-    return ConversationDetail(
-        conversation=summary, transcript=await transcript(graph, conversation_id)
-    )
+    entries = await transcript(graph, conversation_id)
+    if not entries:  # a seeded conversation (demo data)
+        extra = await _seed_extra(context, "conversation", conversation_id)
+        entries = _transcript(extra.transcript if extra else None) or []
+    return ConversationDetail(conversation=summary, transcript=entries)
 
 
 @router.patch("/cases/{case_id}", response_model=AgentCase)
@@ -133,6 +145,22 @@ async def add_feedback(case_id: str, body: FeedbackRequest, context: Context) ->
         entry = await repo.add_feedback(case, tags=body.tags, note=body.note, author=body.author)
         await session.commit()
         return records.feedback_entry(entry)
+
+
+@router.post("/demo/reset")
+async def reset_demo_data(graph: Graph, context: Context) -> dict[str, bool]:
+    """The desk's "Reset demo data": all records and chat memory cleared, seed reloaded."""
+    await reset_demo(context.session_factory, graph.checkpointer)
+    return {"ok": True}
+
+
+async def _seed_extra(context: GraphContext, kind: str, record_id: str) -> SeedExtra | None:
+    async with context.session_factory() as session:
+        return await session.get(SeedExtra, (kind, record_id))
+
+
+def _transcript(raw: list[dict] | None) -> list[TranscriptEntry] | None:
+    return [TranscriptEntry.model_validate(e) for e in raw] if raw else None
 
 
 async def _get_case(repo: SupportCaseRepository, case_id: str):

@@ -19,8 +19,12 @@ uv run alembic upgrade head
 uv run uvicorn src.main:app --reload
 ```
 
-The API is on http://localhost:8000 (interactive docs at `/docs`). Point the widget at it by
-setting `NEXT_PUBLIC_USE_MOCK_API=false` in the front-end's `.env.local`.
+The API is on http://localhost:8000 (interactive docs at `/docs`). Point the widget and the
+agent desk at it by setting `NEXT_PUBLIC_USE_MOCK_API=false` in the front-end's `.env.local`.
+
+On first start the agent desk's invented demo data is loaded (`src/desk/desk-seed.json.gz`,
+exported from the front-end's seed generator; its times are moved to now). The desk's "Reset demo
+data" button (`POST /api/agent/demo/reset`) clears every chat, case and chat memory and reloads it.
 
 ## Develop
 
@@ -44,6 +48,7 @@ src/
   schemas/         request/response models shared with the widget contract
   history/         Unified Customer History: merges the Legacy Systems and our Support Cases
   agent/           LangGraph support graph: state, nodes, checkpointer, turn helpers
+  desk/            agent desk records, transcripts and the demo seed
   api/routes/      HTTP endpoints
 alembic/           database migrations
 ```

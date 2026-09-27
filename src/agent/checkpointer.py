@@ -11,4 +11,5 @@ async def open_checkpointer() -> AsyncIterator[AsyncSqliteSaver]:
     """Durable conversation memory. Paused threads must survive a restart, or a Human Agent
     could never resume them. Swap for AsyncPostgresSaver when moving to Postgres."""
     async with AsyncSqliteSaver.from_conn_string(get_settings().checkpoint_db_path) as saver:
+        await saver.setup()  # create its tables now, not lazily on the first chat
         yield saver

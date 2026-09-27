@@ -9,7 +9,8 @@ from src.agent.checkpointer import open_checkpointer
 from src.agent.graph import build_graph
 from src.api.routes import agent, chat, conversations, customers, health
 from src.core.config import get_settings
-from src.core.db import engine
+from src.core.db import SessionLocal, engine
+from src.desk.seed import seed_if_empty
 
 
 @asynccontextmanager
@@ -17,6 +18,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     async with open_checkpointer() as checkpointer:
         app.state.graph = build_graph(checkpointer)
         app.state.graph_context = default_context()
+        await seed_if_empty(SessionLocal)  # the agent desk's demo data, on first start
         yield
     await engine.dispose()
 
