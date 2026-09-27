@@ -1,0 +1,20 @@
+services:
+  backend:
+    build: .
+    container_name: northwind-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - northwind-data:/app/data
+    environment:
+      DATABASE_URL: sqlite+aiosqlite:////app/data/northwind.db
+      CHECKPOINT_DB_PATH: /app/data/checkpoints.db
+    ports:
+      - "127.0.0.1:8000:8000"
+    command: >
+      sh -c "uv run alembic upgrade head &&
+             exec uv run uvicorn src.main:app --host 0.0.0.0 --port 8000"
+
+volumes:
+  northwind-data:

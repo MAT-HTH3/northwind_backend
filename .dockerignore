@@ -1,0 +1,11 @@
+.git
+.venv
+.env
+*.db
+*.db-shm
+*.db-wal
+__pycache__
+.pytest_cache
+.ruff_cache
+tests
+docs
