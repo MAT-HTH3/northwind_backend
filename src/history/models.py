@@ -110,8 +110,9 @@ class SubmittedReading(BaseModel):
     value: int
     unit: str
     read_date: date
-    status: str  # "awaiting_review"
-    case_id: str
+    status: str  # "accepted" or "needs_review"
+    case_id: str | None
+    read_at: datetime
 
 
 class SupportCaseSummary(BaseModel):

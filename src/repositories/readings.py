@@ -18,11 +18,12 @@ class ReadingRepository:
         self,
         *,
         account_id: str,
-        case_id: str,
         conversation_id: str,
         service: Service,
         value: int,
         read_date: date,
+        status: ReadingStatus,
+        case_id: str | None = None,
     ) -> CustomerReading:
         reading = CustomerReading(
             id=await unique_id(self.session, CustomerReading, self.id_factory),
@@ -32,7 +33,7 @@ class ReadingRepository:
             service=service,
             value=value,
             read_date=read_date,
-            status=ReadingStatus.AWAITING_REVIEW,
+            status=status,
         )
         self.session.add(reading)
         await self.session.flush()

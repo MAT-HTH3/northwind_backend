@@ -14,27 +14,27 @@ class Service(StrEnum):
 
 
 class ReadingStatus(StrEnum):
-    AWAITING_REVIEW = "awaiting_review"
+    ACCEPTED = "accepted"  # plausible: the bill was re-priced from it (ADR 0004)
+    NEEDS_REVIEW = "needs_review"  # implausible: a Human Agent checks it
 
 
 UNITS = {Service.ELECTRICITY: "kWh", Service.WATER: "m³"}
 
 
 class CustomerReading(Base):
-    """A meter reading a customer submitted in chat. Always reviewed by a Human Agent (ADR 0002)."""
+    """A Customer Reading typed in chat. Accepted if plausible, otherwise reviewed (ADR 0004)."""
 
     __tablename__ = "customer_readings"
 
     id: Mapped[str] = mapped_column(String(16), primary_key=True)  # "MR-583201"
     account_id: Mapped[str] = mapped_column(String(32), index=True)
-    case_id: Mapped[str] = mapped_column(ForeignKey("support_cases.id"), index=True)
+    # Only readings that need review belong to a Support Case.
+    case_id: Mapped[str | None] = mapped_column(ForeignKey("support_cases.id"), index=True)
     conversation_id: Mapped[str] = mapped_column(String(64))
     service: Mapped[Service] = mapped_column(str_enum(Service, "service"))
     value: Mapped[int]  # meter displays are whole numbers; digits after a decimal point are ignored
     read_date: Mapped[date]
-    status: Mapped[ReadingStatus] = mapped_column(
-        str_enum(ReadingStatus, "reading_status"), default=ReadingStatus.AWAITING_REVIEW
-    )
+    status: Mapped[ReadingStatus] = mapped_column(str_enum(ReadingStatus, "reading_status"))
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
     @property
