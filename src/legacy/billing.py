@@ -1,4 +1,4 @@
-"""Legacy Billing (the Dunmoor platform): invoices, line items, tariffs, payment method.
+"""Legacy Billing (the old billing platform): invoices, line items, tariffs, payment method.
 
 Records mirror the legacy format: upper-case keys, money in pence, dates as DDMMYYYY strings.
 Turning them into the Unified Customer History is the Analyzer's job.

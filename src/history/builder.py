@@ -96,6 +96,7 @@ def _customer(c: crm.CrmCustomer) -> CustomerDetails:
         first_name=c.name.given,
         last_name=c.name.family,
         region=c.region,
+        vulnerable=c.vulnerable,
         email=c.contact.email,
         phone=c.contact.phone,
         preferred_channel=c.contact.preferred_channel,
@@ -228,10 +229,10 @@ def _usage_history(meters: list[Meter]) -> list[UsageMonth]:
 # --- CaseTrack -------------------------------------------------------------------------------
 
 _CASE_CATEGORIES = {
-    "BILL-EST": "Billing - estimated read",
-    "BILL-DSP": "Billing - dispute or refund",
-    "PAY-DD": "Payments - Direct Debit",
-    "MTR-FLT": "Meter fault",
+    "BILL-EST": "Query about an estimated bill",
+    "BILL-DSP": "Bill dispute",
+    "PAY-DD": "Direct Debit change",
+    "MTR-FLT": "Faulty meter",
 }
 
 

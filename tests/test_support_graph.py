@@ -10,7 +10,7 @@ from src.models import CaseStatus
 from src.repositories import SupportCaseRepository
 from tests.fakes import FAKE_REPLY, fake_context
 
-ACCOUNT = "ACC-372876"
+ACCOUNT = "ACC-DEMO01"
 
 
 @pytest.fixture

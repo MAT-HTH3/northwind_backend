@@ -15,7 +15,7 @@ from src.legacy import get_legacy_systems
 from src.schemas.bill import BillBreakdown
 from tests.fakes import FakeLLM, fake_context
 
-ACCOUNT = "ACC-372876"
+ACCOUNT = "ACC-DEMO01"
 
 
 @pytest.fixture
@@ -26,7 +26,7 @@ async def history(session_factory):
 def test_latest_bill_breakdown(history):
     b = build_bill_breakdown(history)
 
-    assert (b.bill_id, b.amount_due, b.previous_amount) == ("INV-2609-372876", 169.6, 118.39)
+    assert (b.bill_id, b.amount_due, b.previous_amount) == ("INV-2609-DEMO01", 169.6, 118.39)
     assert (b.payment_method, b.reading_type) == ("Direct Debit", "estimated")
     assert (b.due_date, b.last_actual_read_date) == (date(2026, 10, 5), date(2026, 6, 12))
     assert round(sum(line.amount for line in b.lines), 2) == b.amount_due
@@ -40,7 +40,7 @@ def test_latest_bill_breakdown(history):
 
 
 def test_an_older_bill_has_no_previous_amount_and_no_later_usage(history):
-    b = build_bill_breakdown(history, "INV-2608-372876")
+    b = build_bill_breakdown(history, "INV-2608-DEMO01")
 
     assert (b.amount_due, b.previous_amount) == (118.39, None)
     assert b.usage_history[-1].month == "2026-08"
@@ -131,5 +131,5 @@ async def test_an_unknown_bill_goes_back_to_gemini_instead_of_crashing(session_f
 
     result = state["messages"][2]
     assert result.status == "error"
-    assert "INV-2609-372876" in result.content and "INV-2608-372876" in result.content
+    assert "INV-2609-DEMO01" in result.content and "INV-2608-DEMO01" in result.content
     assert state["messages"][-1].content == "I can see your August and September bills."

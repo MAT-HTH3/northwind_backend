@@ -17,7 +17,7 @@ from src.models import Service
 from src.repositories import SupportCaseRepository
 from tests.fakes import FakeLLM, fake_context
 
-ACCOUNT = "ACC-372876"
+ACCOUNT = "ACC-DEMO01"
 
 
 @pytest.fixture

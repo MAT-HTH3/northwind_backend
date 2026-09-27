@@ -6,7 +6,7 @@ from sqlalchemy import select, text
 from src.models import CaseStatus, Priority, SupportCase
 from src.repositories import CaseAlreadyClosedError, IdSpaceExhaustedError, SupportCaseRepository
 
-ACCOUNT = "ACC-372876"
+ACCOUNT = "ACC-DEMO01"
 
 
 def case_fields(**overrides):

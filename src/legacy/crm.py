@@ -1,6 +1,6 @@
 """CRM: customer profile, past contacts, and the cross-references to every other Legacy System.
 
-The only system keyed by the account id the widget sends (e.g. "ACC-372876").
+The only system keyed by the account id the widget sends (e.g. "ACC-DEMO01").
 """
 
 from datetime import date, datetime
@@ -51,6 +51,7 @@ class CrmCustomer(_CrmRecord):
     customer_id: str
     name: CrmName
     region: str
+    vulnerable: bool  # on the Priority Services Register
     contact: CrmContact
     services: list[CrmService]
     cross_references: CrmCrossReferences

@@ -2,17 +2,18 @@
   "_comment": "CRM. camelCase, offsets in local time. Holds the cross-references to every other Legacy System. Synthetic data.",
   "customers": [
     {
-      "customerId": "ACC-372876",
+      "customerId": "ACC-DEMO01",
       "name": { "given": "Sarah", "family": "Whitfield" },
-      "region": "Dunmoor",
+      "region": "North",
+      "vulnerable": false,
       "contact": { "email": "sarah.whitfield@example.com", "phone": "07700 900123", "preferredChannel": "chat" },
       "services": [
         { "type": "electricity", "status": "active", "since": "2019-04-01" },
         { "type": "water", "status": "active", "since": "2019-04-01" }
       ],
       "crossReferences": {
-        "legacyBillingAccount": "0372876",
-        "caseTrackCustomer": "CT-00372876",
+        "legacyBillingAccount": "0900001",
+        "caseTrackCustomer": "CT-00900001",
         "meterPoints": ["1900012345678", "3371092845W"]
       },
       "interactions": [

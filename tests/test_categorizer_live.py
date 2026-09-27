@@ -38,7 +38,7 @@ CASES = [
 
 @pytest.fixture
 async def history(session_factory):
-    return await build_history("ACC-372876", get_legacy_systems(), session_factory)
+    return await build_history("ACC-DEMO01", get_legacy_systems(), session_factory)
 
 
 @pytest.fixture
