@@ -1,41 +1,21 @@
-"""Support Case categories and how each one is routed. Gemini picks the category from this
-closed list; Priority, SLA and queue are fixed here, never chosen by the LLM."""
+"""Support Case categories: the agent desk's six. Gemini picks one; the Triage Rules
+(src/triage) then set Urgency, queue and due date from it, never the LLM."""
 
-from dataclasses import dataclass
-from typing import Literal
+from src.triage import Category
 
-from src.models import Priority
+__all__ = ["FALLBACK", "METER_READING", "TEAM", "Category", "team_for"]
 
-Category = Literal[
-    "Supply fault - repair needed",
-    "Meter fault",
-    "Meter reading review",
-    "Billing - estimated read",
-    "Billing - dispute or refund",
-    "Billing - payment arrangement",
-    "General enquiry",
-]
+METER_READING: Category = "Meter reading"
+FALLBACK: Category = "Service"
 
-METER_READING_REVIEW: Category = "Meter reading review"
-FALLBACK: Category = "General enquiry"
-
-
-@dataclass(frozen=True)
-class Routing:
-    priority: Priority
-    sla_days: int
-    queue: str
-    team: str  # how the AI Assistant names the queue to the customer
-
-
-ROUTING: dict[Category, Routing] = {
-    "Supply fault - repair needed": Routing(Priority.HIGH, 5, "Field engineers", "engineers"),
-    "Meter fault": Routing(Priority.MID, 10, "Metering team", "metering team"),
-    "Meter reading review": Routing(Priority.MID, 10, "Billing specialists", "billing team"),
-    "Billing - estimated read": Routing(Priority.MID, 10, "Billing specialists", "billing team"),
-    "Billing - dispute or refund": Routing(Priority.MID, 10, "Billing specialists", "billing team"),
-    "Billing - payment arrangement": Routing(
-        Priority.LOW, 20, "Billing specialists", "billing team"
-    ),
-    "General enquiry": Routing(Priority.LOW, 20, "Customer care", "customer care team"),
+# How the AI Assistant names each queue to the customer.
+TEAM: dict[str, str] = {
+    "Billing specialists": "billing team",
+    "Metering": "metering team",
+    "Field operations": "field team",
+    "Customer relations": "customer relations team",
 }
+
+
+def team_for(queue: str) -> str:
+    return TEAM.get(queue, "team")

@@ -3,7 +3,7 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import CaseConversation, CaseStatus, HeldMessage, Priority, SupportCase
+from src.models import CaseConversation, CaseStatus, HeldMessage, SupportCase, Urgency
 from src.models.types import utcnow
 from src.repositories.ids import IdFactory, new_case_id, unique_id
 
@@ -25,7 +25,7 @@ class SupportCaseRepository:
         account_id: str,
         conversation_id: str,
         category: str,
-        priority: Priority,
+        priority: Urgency,
         sla_days: int,
         queue: str,
         expected_response_by: date,

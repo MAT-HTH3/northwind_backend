@@ -1,6 +1,5 @@
 """Graph nodes. Each node is thin; the logic lives in its own module."""
 
-from datetime import date
 from typing import Literal
 
 from langchain_core.messages import AIMessage, HumanMessage
@@ -13,6 +12,7 @@ from src.agent.context import GraphContext
 from src.agent.state import ResumeValue, SupportState, history_from
 from src.agent.unified_desktop import hand_off, reply
 from src.history import build_history
+from src.models.types import utcnow
 from src.repositories import SupportCaseRepository
 
 GraphRuntime = Runtime[GraphContext]
@@ -68,7 +68,7 @@ async def unified_desktop(state: SupportState, runtime: GraphRuntime) -> dict:
         meter_reading=state.get("meter_reading"),
         messages=state["messages"],
         history=history_from(state),
-        today=date.today(),
+        now=utcnow(),
     )
     return {
         "case_id": result.case.id,

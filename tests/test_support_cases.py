@@ -3,7 +3,7 @@ from datetime import UTC, date, datetime
 import pytest
 from sqlalchemy import select, text
 
-from src.models import CaseStatus, Priority, SupportCase
+from src.models import CaseStatus, SupportCase, Urgency
 from src.repositories import CaseAlreadyClosedError, IdSpaceExhaustedError, SupportCaseRepository
 
 ACCOUNT = "ACC-DEMO01"
@@ -13,8 +13,8 @@ def case_fields(**overrides):
     fields = dict(
         account_id=ACCOUNT,
         conversation_id="conv-1",
-        category="Meter reading review",
-        priority=Priority.MID,
+        category="Meter reading",
+        priority=Urgency.MEDIUM,
         sla_days=10,
         queue="Billing specialists",
         expected_response_by=date(2026, 10, 6),
@@ -78,7 +78,7 @@ async def test_a_closed_conversation_can_be_held_by_a_new_case(session):
     old = await repo.create(**case_fields(conversation_id="conv-1"))
     await repo.close(old, "Done.")
 
-    new = await repo.create(**case_fields(conversation_id="conv-1", category="Meter fault"))
+    new = await repo.create(**case_fields(conversation_id="conv-1", category="Supply"))
 
     assert (await repo.open_case_for_conversation("conv-1")).id == new.id
 
@@ -86,13 +86,13 @@ async def test_a_closed_conversation_can_be_held_by_a_new_case(session):
 async def test_open_case_for_category_matches_account_category_and_status(session):
     repo = SupportCaseRepository(session)
     readings = await repo.create(**case_fields())
-    await repo.create(**case_fields(category="Supply fault - repair needed"))
+    await repo.create(**case_fields(category="Water quality"))
     await repo.create(**case_fields(account_id="ACC-000001"))
-    closed = await repo.create(**case_fields(category="Meter fault"))
+    closed = await repo.create(**case_fields(category="Supply"))
     await repo.close(closed, "Done.")
 
-    assert (await repo.open_case_for_category(ACCOUNT, "Meter reading review")).id == readings.id
-    assert await repo.open_case_for_category(ACCOUNT, "Meter fault") is None
+    assert (await repo.open_case_for_category(ACCOUNT, "Meter reading")).id == readings.id
+    assert await repo.open_case_for_category(ACCOUNT, "Supply") is None
 
 
 async def test_timestamps_come_back_timezone_aware_from_sqlite(session):
@@ -119,4 +119,4 @@ async def test_unknown_priority_is_rejected_by_the_database(session):
     await SupportCaseRepository(session).create(**case_fields())
 
     with pytest.raises(Exception, match="CHECK constraint"):
-        await session.execute(text("UPDATE support_cases SET priority = 'P1'"))
+        await session.execute(text("UPDATE support_cases SET priority = 'high'"))

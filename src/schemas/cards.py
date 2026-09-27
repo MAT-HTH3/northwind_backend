@@ -24,7 +24,7 @@ class SupportCaseCard(BaseModel):
 
     case_id: str
     category: str
-    priority: Literal["high", "mid", "low"]
+    priority: Literal["P1", "P2", "P3"]  # Urgency: High, Medium, Low
     sla_days: int
     queue: str
     expected_response_by: date

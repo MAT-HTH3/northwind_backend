@@ -1,0 +1,1501 @@
+[
+  {
+    "input": {
+      "case_id": "NW-900001",
+      "account_id": "ACC-G0001",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 10,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900002",
+      "account_id": "ACC-G0002",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Payments",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 10,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Payments complaint",
+          "points": 10
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Payments cases go to Billing specialists",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900003",
+      "account_id": "ACC-G0003",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Meter reading",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 5,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Meter reading complaint",
+          "points": 5
+        }
+      ],
+      "queue": "Metering",
+      "route_reason": "Meter reading cases go to Metering",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900004",
+      "account_id": "ACC-G0004",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Supply",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 20,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Supply complaint",
+          "points": 20
+        }
+      ],
+      "queue": "Field operations",
+      "route_reason": "Supply cases go to Field operations",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900005",
+      "account_id": "ACC-G0005",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Water quality",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 20,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Water quality complaint",
+          "points": 20
+        }
+      ],
+      "queue": "Field operations",
+      "route_reason": "Water quality cases go to Field operations",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900006",
+      "account_id": "ACC-G0006",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Service",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 5,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Service complaint",
+          "points": 5
+        }
+      ],
+      "queue": "Customer relations",
+      "route_reason": "Service cases go to Customer relations",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900007",
+      "account_id": "ACC-G0007",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Supply",
+      "subject": "Power cut",
+      "description": "We have had no power since this morning.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 60,
+      "computed": "P1",
+      "priority": "P1",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Supply complaint",
+          "points": 20
+        },
+        {
+          "id": "no_supply",
+          "label": "Customer reports no supply",
+          "points": 40
+        }
+      ],
+      "queue": "Field operations",
+      "route_reason": "Supply cases go to Field operations",
+      "sla_days": 2,
+      "due_at": "2026-09-03T09:00:00.000Z",
+      "themes": [
+        {
+          "id": "no_supply",
+          "phrase": "Power cut"
+        }
+      ],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900008",
+      "account_id": "ACC-G0008",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Water quality",
+      "subject": "Brown water",
+      "description": "The water is discoloured and smells odd.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 60,
+      "computed": "P1",
+      "priority": "P1",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Water quality complaint",
+          "points": 20
+        },
+        {
+          "id": "health",
+          "label": "Possible health risk (water quality)",
+          "points": 40
+        }
+      ],
+      "queue": "Field operations",
+      "route_reason": "Water quality cases go to Field operations",
+      "sla_days": 2,
+      "due_at": "2026-09-03T09:00:00.000Z",
+      "themes": [
+        {
+          "id": "water_quality",
+          "phrase": "Brown water"
+        }
+      ],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900009",
+      "account_id": "ACC-G0009",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Service",
+      "subject": "Question about my bill",
+      "description": "I will take this to the ombudsman.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 30,
+      "computed": "P2",
+      "priority": "P2",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Service complaint",
+          "points": 5
+        },
+        {
+          "id": "regulator",
+          "label": "Mentions the regulator or ombudsman",
+          "points": 25
+        }
+      ],
+      "queue": "Customer relations",
+      "route_reason": "Mentions the regulator or ombudsman, so it goes straight to Customer relations",
+      "sla_days": 10,
+      "due_at": "2026-09-11T09:00:00.000Z",
+      "themes": [
+        {
+          "id": "regulator",
+          "phrase": "ombudsman"
+        }
+      ],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900010",
+      "account_id": "ACC-G0010",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "I'm still waiting, this is the third time I've called.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 25,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        },
+        {
+          "id": "chasing",
+          "label": "Customer is chasing an earlier contact",
+          "points": 15
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [
+        {
+          "id": "chasing",
+          "phrase": "still waiting"
+        }
+      ],
+      "information_request": false,
+      "repeat_contact": true
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900011",
+      "account_id": "ACC-G0011",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Estimated bill",
+      "description": "My bill was estimated again, can you explain it?",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 0,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        },
+        {
+          "id": "information",
+          "label": "Information request the assistant can answer",
+          "points": -10
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing case about an estimated reading: Billing specialists, with the meter history attached",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [
+        {
+          "id": "estimated_reading",
+          "phrase": "Estimated"
+        },
+        {
+          "id": "bill_explanation",
+          "phrase": "explain"
+        }
+      ],
+      "information_request": true,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900012",
+      "account_id": "ACC-G0012",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "The unit rate went up and my Direct Debit changed. I want a refund.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 10,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [
+        {
+          "id": "tariff_change",
+          "phrase": "unit rate"
+        },
+        {
+          "id": "direct_debit",
+          "phrase": "Direct Debit"
+        },
+        {
+          "id": "refund",
+          "phrase": "refund"
+        }
+      ],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900013",
+      "account_id": "ACC-G0013",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "The engineer never turned up for the missed appointment.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 10,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [
+        {
+          "id": "missed_appointment",
+          "phrase": "missed appointment"
+        }
+      ],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900014",
+      "account_id": "ACC-G0014",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "My smart meter in-home display is blank. I moved house last month.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 10,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [
+        {
+          "id": "smart_meter",
+          "phrase": "smart meter"
+        },
+        {
+          "id": "moving_home",
+          "phrase": "moved house"
+        }
+      ],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900015",
+      "account_id": "ACC-G0015",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "How do I read my meter?",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 0,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        },
+        {
+          "id": "information",
+          "label": "Information request the assistant can answer",
+          "points": -10
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [],
+      "information_request": true,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900016",
+      "account_id": "ACC-G0016",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "chat",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "How do I read my meter? The assistant didn't help.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "assistant"
+    },
+    "expected": {
+      "score": 20,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        },
+        {
+          "id": "assistant",
+          "label": "Asked for a person after using the assistant",
+          "points": 10
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900017",
+      "account_id": "ACC-G0017",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": true,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 45,
+      "computed": "P2",
+      "priority": "P2",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        },
+        {
+          "id": "vulnerable",
+          "label": "Customer is on the Priority Services Register",
+          "points": 35
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 10,
+      "due_at": "2026-09-11T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900018",
+      "account_id": "ACC-G0018",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": 149.99,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 10,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900019",
+      "account_id": "ACC-G0019",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": 150,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 25,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        },
+        {
+          "id": "amount",
+          "label": "£150 in dispute",
+          "points": 15
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900020",
+      "account_id": "ACC-G0020",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": 499.99,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 25,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        },
+        {
+          "id": "amount",
+          "label": "£500 in dispute",
+          "points": 15
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900021",
+      "account_id": "ACC-G0021",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": 500,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 35,
+      "computed": "P2",
+      "priority": "P2",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        },
+        {
+          "id": "amount",
+          "label": "£500 in dispute",
+          "points": 25
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 10,
+      "due_at": "2026-09-11T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900022",
+      "account_id": "ACC-G0022",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 1,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 20,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        },
+        {
+          "id": "transfers",
+          "label": "Already moved between teams 1×",
+          "points": 10
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900023",
+      "account_id": "ACC-G0023",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": true,
+      "channel": "phone",
+      "category": "Supply",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 1,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 65,
+      "computed": "P1",
+      "priority": "P1",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Supply complaint",
+          "points": 20
+        },
+        {
+          "id": "vulnerable",
+          "label": "Customer is on the Priority Services Register",
+          "points": 35
+        },
+        {
+          "id": "transfers",
+          "label": "Already moved between teams 1×",
+          "points": 10
+        }
+      ],
+      "queue": "Field operations",
+      "route_reason": "Supply cases go to Field operations",
+      "sla_days": 2,
+      "due_at": "2026-09-03T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900024",
+      "account_id": "ACC-G0024",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": true,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 30,
+      "computed": "P2",
+      "priority": "P2",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        },
+        {
+          "id": "reopened",
+          "label": "Case was reopened",
+          "points": 20
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 10,
+      "due_at": "2026-09-11T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": true
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900025",
+      "account_id": "ACC-G0025",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 2,
+      "reopened": true,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 40,
+      "computed": "P2",
+      "priority": "P2",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        },
+        {
+          "id": "reopened",
+          "label": "Case was reopened",
+          "points": 20
+        },
+        {
+          "id": "transfers",
+          "label": "Already moved between teams 2×",
+          "points": 10
+        }
+      ],
+      "queue": "Customer relations",
+      "route_reason": "Reopened after two or more transfers, so one team owns it end to end",
+      "sla_days": 10,
+      "due_at": "2026-09-11T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": true
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900026",
+      "account_id": "ACC-G0026",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 1,
+      "reopened": true,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 40,
+      "computed": "P2",
+      "priority": "P2",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        },
+        {
+          "id": "reopened",
+          "label": "Case was reopened",
+          "points": 20
+        },
+        {
+          "id": "transfers",
+          "label": "Already moved between teams 1×",
+          "points": 10
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 10,
+      "due_at": "2026-09-11T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": true
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900027",
+      "account_id": "ACC-G0027",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Supply",
+      "subject": "Power cut",
+      "description": "No power.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": "P3",
+      "source": "direct"
+    },
+    "expected": {
+      "score": 60,
+      "computed": "P1",
+      "priority": "P3",
+      "overridden": true,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Supply complaint",
+          "points": 20
+        },
+        {
+          "id": "no_supply",
+          "label": "Customer reports no supply",
+          "points": 40
+        }
+      ],
+      "queue": "Field operations",
+      "route_reason": "Supply cases go to Field operations",
+      "sla_days": 20,
+      "due_at": "2026-09-21T09:00:00.000Z",
+      "themes": [
+        {
+          "id": "no_supply",
+          "phrase": "Power cut"
+        }
+      ],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900028",
+      "account_id": "ACC-G0028",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": "P1",
+      "source": "direct"
+    },
+    "expected": {
+      "score": 10,
+      "computed": "P3",
+      "priority": "P1",
+      "overridden": true,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 2,
+      "due_at": "2026-09-03T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900029",
+      "account_id": "ACC-REPEAT",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-08-01T09:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 10,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 20,
+      "due_at": "2026-08-21T09:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900030",
+      "account_id": "ACC-REPEAT",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-01T10:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 10,
+      "computed": "P3",
+      "priority": "P3",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 20,
+      "due_at": "2026-09-21T10:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": false
+    }
+  },
+  {
+    "input": {
+      "case_id": "NW-900031",
+      "account_id": "ACC-REPEAT",
+      "customer_name": "Test Customer",
+      "region": "North",
+      "vulnerable": false,
+      "channel": "phone",
+      "category": "Billing",
+      "subject": "Question about my bill",
+      "description": "Please call me back.",
+      "opened_at": "2026-09-11T10:00:00.000Z",
+      "closed_at": null,
+      "status": "new",
+      "assignee": null,
+      "resolution": null,
+      "disputed_amount": null,
+      "transfers": 0,
+      "reopened": false,
+      "priority_override": null,
+      "source": "direct"
+    },
+    "expected": {
+      "score": 30,
+      "computed": "P2",
+      "priority": "P2",
+      "overridden": false,
+      "rules": [
+        {
+          "id": "category",
+          "label": "Billing complaint",
+          "points": 10
+        },
+        {
+          "id": "repeat",
+          "label": "Repeat contact: 1 other case in 30 days",
+          "points": 20
+        }
+      ],
+      "queue": "Billing specialists",
+      "route_reason": "Billing cases go to Billing specialists",
+      "sla_days": 10,
+      "due_at": "2026-09-21T10:00:00.000Z",
+      "themes": [],
+      "information_request": false,
+      "repeat_contact": true
+    }
+  }
+]
