@@ -4,10 +4,17 @@ from src.repositories.conversations import ConversationOutcome, ConversationRepo
 from src.repositories.ids import IdSpaceExhaustedError
 from src.repositories.readings import ReadingRepository
 from src.repositories.resolutions import ResolutionRepository
-from src.repositories.support_cases import CaseAlreadyClosedError, SupportCaseRepository
+from src.repositories.support_cases import (
+    AI_ASSISTANT,
+    CaseAlreadyClosedError,
+    CaseChanges,
+    SupportCaseRepository,
+)
 
 __all__ = [
+    "AI_ASSISTANT",
     "CaseAlreadyClosedError",
+    "CaseChanges",
     "ConversationOutcome",
     "ConversationRepository",
     "IdSpaceExhaustedError",

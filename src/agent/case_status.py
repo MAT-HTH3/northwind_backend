@@ -15,6 +15,12 @@ from src.history import UnifiedCustomerHistory
 
 MAX_OPEN = 3
 
+STAGE_PHRASES = {
+    "new": "not started yet",
+    "in_progress": "in progress",
+    "waiting_customer": "waiting for your reply",
+}
+
 # Case Outcome (the desk's resolution codes) in the customer's words.
 OUTCOME_PHRASES = {
     "information_only": "we gave you the information you needed",
@@ -34,7 +40,8 @@ def case_status_text(history: UnifiedCustomerHistory) -> str:
     open_cases = [c for c in history.support_cases if c.status == "open"]
     if open_cases:
         lines = [
-            f"Your case **{c.case_id}** is with our {team_for(c.queue)}. They'll reply by "
+            f"Your case **{c.case_id}** is with our {team_for(c.queue)} "
+            f"({STAGE_PHRASES.get(c.stage, 'in progress')}). They'll reply by "
             f"**{_long_date(c.expected_response_by)}**."
             for c in open_cases[:MAX_OPEN]
         ]
