@@ -63,3 +63,13 @@ async def test_live_complaint_question_shows_no_card(context):
     reply, tools = await ask(context, "I want to complain about how long this is taking")
 
     assert tools == []
+
+
+@pytest.mark.parametrize(
+    "message", ["What happened with the complaint I made in July?", "Any update on my case?"]
+)
+async def test_live_case_questions_get_the_code_written_status(context, message):
+    reply, tools = await ask(context, message)
+
+    assert tools == []
+    assert "CT-88123" in reply  # the legacy case, found without the model

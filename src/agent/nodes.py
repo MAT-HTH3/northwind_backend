@@ -8,6 +8,7 @@ from langgraph.types import Command, interrupt
 
 from src.agent.auto_resolver import respond
 from src.agent.cards import UI_CARDS, receipt_card
+from src.agent.case_status import case_status_reply
 from src.agent.categorizer import categorize
 from src.agent.context import GraphContext
 from src.agent.readings import check_reading, revised_amount
@@ -58,10 +59,17 @@ async def categorizer(state: SupportState, runtime: GraphRuntime) -> dict:
 
 def route_after_categorizer(
     state: SupportState,
-) -> Literal["accept_reading", "auto_resolver", "unified_desktop"]:
+) -> Literal["accept_reading", "case_status", "auto_resolver", "unified_desktop"]:
     if state.get("reading_check") == "accepted":
         return "accept_reading"
-    return "auto_resolver" if state["is_self_service"] else "unified_desktop"
+    if not state["is_self_service"]:
+        return "unified_desktop"
+    return "case_status" if state.get("case_status_request") else "auto_resolver"
+
+
+async def case_status(state: SupportState, runtime: GraphRuntime) -> dict:
+    """Where the customer's cases stand, written by code from the history. No LLM."""
+    return {"messages": [case_status_reply(history_from(state))]}
 
 
 async def accept_reading(state: SupportState, runtime: GraphRuntime) -> dict:
