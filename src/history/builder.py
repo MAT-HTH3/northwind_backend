@@ -135,6 +135,7 @@ def _pounds(pence: float) -> float:
 def _billing(a: lb.BillingAccount) -> Billing:
     return Billing(
         payment_method=_PAYMENT_METHODS[a.pay_method],
+        tariff_name=a.tariff_name.title(),
         direct_debit_day=a.dd_day,
         bills=[_bill(invoice) for invoice in a.invoices],
         tariffs=[

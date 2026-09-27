@@ -2,19 +2,15 @@ import json
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, AIMessageChunk, ToolMessage
 from langgraph.checkpoint.memory import InMemorySaver
 
 from src.agent.categorizer import Categorization, MeterReadingMention
-from src.agent.context import GraphContext
 from src.agent.graph import build_graph
 from src.api.deps import get_graph, get_graph_context
-from src.api.streaming import CUSTOMER_SAFE_ERROR
-from src.legacy import get_legacy_systems
+from src.api.streaming import CUSTOMER_SAFE_ERROR, from_message
 from src.main import app
 from src.models import Service
-from src.repositories import SupportCaseRepository
 from tests.fakes import FakeLLM, fake_context
 
 ACCOUNT = "ACC-DEMO01"
@@ -93,19 +89,9 @@ async def test_bill_question_streams_tool_call_result_and_text(use, session_fact
     assert (text, text_data, done) == ("text-delta", {"delta": "Your bill is **£169.60**."}, "done")
 
 
-async def test_hand_off_streams_cards_with_results_and_never_leaks_the_summary(
-    use, session_factory
-):
-    summary_llm = GenericFakeChatModel(messages=iter([AIMessage("INTERNAL SUMMARY for the agent")]))
+async def test_hand_off_streams_cards_with_results_then_text(use, session_factory):
     reading = MeterReadingMention(service=Service.ELECTRICITY, value=48213)
-    use(
-        GraphContext(
-            session_factory=session_factory,
-            legacy=get_legacy_systems(),
-            categorizer_llm=hand_off(reading=reading),
-            resolver_llm=summary_llm,  # streams tokens through LangGraph, like Gemini would
-        )
-    )
+    use(fake_context(session_factory, hand_off(reading=reading)))
 
     response = await post_chat("My meter says 48213")
 
@@ -113,15 +99,21 @@ async def test_hand_off_streams_cards_with_results_and_never_leaks_the_summary(
     assert [e for e, _ in streamed] == ["tool-call", "tool-call", "text-delta", "done"]
     receipt, case = streamed[0][1], streamed[1][1]
     assert (receipt["name"], receipt["result"]["value"]) == ("submit_meter_reading", 48213)
-    assert (case["name"], case["result"]["category"]) == (
-        "create_support_case",
-        "Meter reading",
-    )
+    assert (case["name"], case["result"]["category"]) == ("create_support_case", "Meter reading")
     assert receipt["id"] != case["id"]
-    assert "INTERNAL SUMMARY" not in response.text.replace(case["result"]["summary"], "")
-    async with session_factory() as session:
-        [stored] = await SupportCaseRepository(session).list_all()
-    assert stored.summary == "INTERNAL SUMMARY for the agent"
+
+
+@pytest.mark.parametrize("node", ["categorizer", "unified_desktop", "analyzer"])
+def test_tokens_from_internal_llm_calls_never_reach_the_customer(node):
+    assert from_message(node, AIMessageChunk("internal structured output")) == []
+
+
+def test_the_widget_gets_the_tool_artifact_not_what_the_model_saw():
+    message = ToolMessage("Bill shown.", tool_call_id="c1", artifact={"amount_due": 169.6})
+
+    assert from_message("resolver_tools", message) == [
+        ("tool-result", {"id": "c1", "result": {"amount_due": 169.6}, "is_error": False})
+    ]
 
 
 async def test_a_held_conversation_gets_the_acknowledgement(use, session_factory):

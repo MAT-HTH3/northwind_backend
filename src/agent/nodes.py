@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import HumanMessage
 from langgraph.runtime import Runtime
 from langgraph.types import Command, interrupt
 
@@ -10,6 +10,7 @@ from src.agent.auto_resolver import respond
 from src.agent.categorizer import categorize
 from src.agent.context import GraphContext
 from src.agent.state import ResumeValue, SupportState, history_from
+from src.agent.transcript import written_by_code
 from src.agent.unified_desktop import hand_off, reply
 from src.history import build_history
 from src.models.types import utcnow
@@ -30,12 +31,14 @@ async def categorizer(state: SupportState, runtime: GraphRuntime) -> dict:
     result = await categorize(
         runtime.context.categorizer_llm,
         state["messages"],
-        history_from(state),
         force_handoff=state.get("force_handoff", False),
     )
     return {
         "is_self_service": result.is_self_service,
         "category": result.category,
+        "subject": result.subject,
+        "disputed_amount": result.disputed_amount,
+        "case_status_request": result.case_status_request,
         "reason": result.reason,
         "meter_reading": result.meter_reading.model_dump() if result.meter_reading else None,
         "force_handoff": False,  # the "No" override applies to one message only
@@ -48,7 +51,7 @@ def route_after_categorizer(state: SupportState) -> Literal["auto_resolver", "un
 
 async def auto_resolver(state: SupportState, runtime: GraphRuntime) -> dict:
     """Answers a Self-service request. Loops through the tools node while Gemini calls tools."""
-    reply = await respond(runtime.context.resolver_llm, state["messages"], history_from(state))
+    reply = await respond(runtime.context.resolver_llm, state["messages"])
     return {"messages": [reply]}
 
 
@@ -61,10 +64,11 @@ async def unified_desktop(state: SupportState, runtime: GraphRuntime) -> dict:
     """Hands the request to a Human Agent, then the graph waits at the hold."""
     result = await hand_off(
         session_factory=runtime.context.session_factory,
-        llm=runtime.context.resolver_llm,
         account_id=state["account_id"],
         conversation_id=state["conversation_id"],
         category=state.get("category"),
+        subject=state.get("subject"),
+        disputed_amount=state.get("disputed_amount"),
         meter_reading=state.get("meter_reading"),
         messages=state["messages"],
         history=history_from(state),
@@ -104,7 +108,7 @@ async def acknowledge(state: SupportState, runtime: GraphRuntime) -> dict:
         case = await repo.get(state["case_id"])
         await repo.add_held_message(case, state["conversation_id"], content)
         await session.commit()
-    return {"messages": [AIMessage(acknowledgement(state["case_id"]))]}
+    return {"messages": [written_by_code(acknowledgement(state["case_id"]))]}
 
 
 async def close(state: SupportState, runtime: GraphRuntime) -> dict:

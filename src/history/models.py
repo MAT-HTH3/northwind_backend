@@ -54,6 +54,7 @@ class Tariff(BaseModel):
 
 class Billing(BaseModel):
     payment_method: str  # "Direct Debit"
+    tariff_name: str  # "Standard Variable"
     direct_debit_day: int | None
     bills: list[Bill]  # newest first
     tariffs: list[Tariff]

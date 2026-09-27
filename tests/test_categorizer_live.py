@@ -12,8 +12,6 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from src.agent.categorizer import categorize
 from src.core.config import get_settings
-from src.history import build_history
-from src.legacy import get_legacy_systems
 
 pytestmark = pytest.mark.skipif(not os.getenv("RUN_LIVE_LLM"), reason="set RUN_LIVE_LLM=1")
 
@@ -36,9 +34,17 @@ CASES = [
 ]
 
 
-@pytest.fixture
-async def history(session_factory):
-    return await build_history("ACC-DEMO01", get_legacy_systems(), session_factory)
+async def test_live_subject_disputed_amount_and_case_status(gemini):
+    refund = await categorize(
+        gemini, [HumanMessage("You overcharged me £180, I want it refunded")], force_handoff=False
+    )
+    chasing = await categorize(
+        gemini, [HumanMessage("Any update on the complaint I made last week?")], force_handoff=False
+    )
+
+    assert (refund.is_self_service, refund.disputed_amount) == (False, 180)
+    assert refund.category in {"Billing", "Payments"}
+    assert chasing.case_status_request is True
 
 
 @pytest.fixture
@@ -50,8 +56,8 @@ def gemini():
 
 
 @pytest.mark.parametrize(("message", "self_service", "category", "reading"), CASES)
-async def test_live_categorization(gemini, history, message, self_service, category, reading):
-    result = await categorize(gemini, [HumanMessage(message)], history, force_handoff=False)
+async def test_live_categorization(gemini, message, self_service, category, reading):
+    result = await categorize(gemini, [HumanMessage(message)], force_handoff=False)
 
     assert result.is_self_service is self_service, result.reason
     if category:

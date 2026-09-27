@@ -1,46 +1,30 @@
 """The Unified Desktop: hands a Hand-off request to a Human Agent (ADR 0001, ADR 0002).
 
 Joins the customer's open case on the same topic, or opens a new Support Case with the Urgency,
-queue and due date from the Triage Rules (the same rules the agent desk runs) and a summary for
-the Human Agent. Saves any meter reading, then
-replies with fixed text and the receipt and case cards.
+queue and due date from the Triage Rules (the same rules the agent desk runs) and a summary
+written by code (ADR 0003). Saves any meter reading, then replies with fixed text and the
+receipt and case cards.
 """
 
-import logging
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import get_args
 from zoneinfo import ZoneInfo
 
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, AnyMessage, HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, AnyMessage, HumanMessage
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from src.agent.categories import FALLBACK, Category, team_for
-from src.agent.transcript import recent_messages, transcript_text
+from src.agent.categories import FALLBACK, Category, subject_for, team_for
+from src.agent.transcript import written_by_code
 from src.history import UnifiedCustomerHistory
 from src.models import CustomerReading, Service, SupportCase, Urgency
 from src.repositories import ReadingRepository, SupportCaseRepository
 from src.schemas.cards import MeterReadingReceipt, SupportCaseCard
 from src.triage import Triage, TriageCase, triage_all
 
-logger = logging.getLogger(__name__)
-
 UI_CARDS = "ui_cards"  # AIMessage.additional_kwargs key; #20 streams these as tool-call events
-TRANSCRIPT_WINDOW = 20
 UK = ZoneInfo("Europe/London")  # the customer's calendar, for "reply by" dates
 NEW_CASE = "new"
-
-SUMMARY_PROMPT = """\
-Write a case summary for the Northwind Human Agent who will pick up this conversation, so the \
-customer never has to explain it again. Two to four plain sentences, no greeting, no headings. \
-Say what the customer wants, the relevant facts from their history (bill amounts, estimated \
-reads, meter readings they gave, earlier contacts and cases), and anything already tried. \
-Handed off as: {category}.
-
-Unified Customer History (JSON):
-{history}
-"""
 
 
 @dataclass(frozen=True)
@@ -53,16 +37,18 @@ class HandOff:
 async def hand_off(
     *,
     session_factory: async_sessionmaker[AsyncSession],
-    llm: BaseChatModel,
     account_id: str,
     conversation_id: str,
     category: str | None,
+    subject: str | None,
+    disputed_amount: float | None,
     meter_reading: dict | None,
     messages: list[AnyMessage],
     history: UnifiedCustomerHistory,
     now: datetime,
 ) -> HandOff:
     category = category if category in get_args(Category) else FALLBACK
+    subject = subject_for(category, subject)
     today = now.astimezone(UK).date()
 
     async with session_factory() as session:
@@ -72,7 +58,9 @@ async def hand_off(
         if case is not None:
             await cases.attach_conversation(case, conversation_id)
         else:
-            triage = triage_new_case(account_id, category, messages, history, now)
+            triage = triage_new_case(
+                account_id, category, subject, disputed_amount, messages, history, now
+            )
             case = await cases.create(
                 account_id=account_id,
                 conversation_id=conversation_id,
@@ -81,7 +69,7 @@ async def hand_off(
                 sla_days=triage.sla_days,
                 queue=triage.queue,
                 expected_response_by=triage.due_at.astimezone(UK).date(),
-                summary=await summarise(llm, category, messages, history),
+                summary=case_summary(subject, meter_reading, messages, history),
             )
         reading = None
         if meter_reading:
@@ -100,6 +88,8 @@ async def hand_off(
 def triage_new_case(
     account_id: str,
     category: Category,
+    subject: str,
+    disputed_amount: float | None,
     messages: list[AnyMessage],
     history: UnifiedCustomerHistory,
     now: datetime,
@@ -117,7 +107,9 @@ def triage_new_case(
         account_id=account_id,
         category=category,
         opened_at=now,
+        subject=subject,
         description=customer_words(messages),
+        disputed_amount=disputed_amount,
         vulnerable=history.customer.vulnerable,
         source="assistant",
     )
@@ -129,34 +121,32 @@ def customer_words(messages: list[AnyMessage]) -> str:
     return "\n".join(m.text for m in messages if isinstance(m, HumanMessage))
 
 
-async def summarise(
-    llm: BaseChatModel,
-    category: Category,
+def case_summary(
+    subject: str,
+    reading: dict | None,
     messages: list[AnyMessage],
     history: UnifiedCustomerHistory,
 ) -> str:
-    """Gemini writes the summary; if it fails, a plain one is used so the hand-off still happens."""
-    prompt = SystemMessage(
-        SUMMARY_PROMPT.format(category=category, history=history.model_dump_json())
-    )
-    transcript = transcript_text(recent_messages(messages, TRANSCRIPT_WINDOW))
-    try:
-        reply = await llm.ainvoke([prompt, HumanMessage(f"Conversation so far:\n{transcript}")])
-        if reply.text.strip():
-            return reply.text.strip()
-    except Exception:
-        logger.exception("Case summary LLM failed; using the fallback summary")
-    return fallback_summary(category, messages, history)
-
-
-def fallback_summary(
-    category: str, messages: list[AnyMessage], history: UnifiedCustomerHistory
-) -> str:
+    """The summary for the Human Agent, written by code from the case facts (ADR 0003)."""
     last = next((m.text for m in reversed(messages) if isinstance(m, HumanMessage)), "")
-    name = f"{history.customer.first_name} {history.customer.last_name}"
-    return (
-        f"{name} ({history.customer.region}) was handed off as {category}. Last message: {last!r}"
-    )
+    parts = [f"{subject}, raised in chat. The customer said: “{last}”."]
+    if reading:
+        unit = "kWh" if reading["service"] == "electricity" else "m³"
+        parts.append(f"Meter reading given: {reading['value']:,} {unit} ({reading['service']}).")
+    if history.billing and history.billing.bills:
+        bill = history.billing.bills[0]
+        parts.append(
+            f"Latest bill {bill.bill_id}: £{bill.amount_due:,.2f}, {bill.reading_type} reading, "
+            f"due {bill.due_date:%-d %B}."
+        )
+    for past in [c for c in history.past_cases if c.times_reopened][:1]:
+        parts.append(
+            f"Earlier case {past.reference}: {past.category}, {past.status}, "
+            f"reopened {past.times_reopened}×."
+        )
+    for ours in history.support_cases[:1]:
+        parts.append(f"Previous Support Case {ours.case_id}: {ours.category}, {ours.status}.")
+    return " ".join(parts)
 
 
 def reply(result: HandOff) -> AIMessage:
@@ -212,7 +202,7 @@ def reply(result: HandOff) -> AIMessage:
             ).model_dump(mode="json"),
         }
     )
-    return AIMessage("\n\n".join(parts), additional_kwargs={UI_CARDS: cards})
+    return written_by_code("\n\n".join(parts), **{UI_CARDS: cards})
 
 
 def _long_date(value: date) -> str:
