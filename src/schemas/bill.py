@@ -3,7 +3,7 @@
 from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_serializer
 
 
 class BillLine(BaseModel):
@@ -13,6 +13,16 @@ class BillLine(BaseModel):
     quantity: float | None = None
     unit: str | None = None
     unit_rate: float | None = None
+
+    @model_serializer(mode="wrap")
+    def _omit_missing(self, handler):
+        # The contract types these as optional (absent), not null; the widget checks
+        # `!== undefined`, so a null quantity would reach number() and crash the breakdown.
+        data = handler(self)
+        return {k: v for k, v in data.items() if v is not None or k not in OPTIONAL_LINE_FIELDS}
+
+
+OPTIONAL_LINE_FIELDS = {"quantity", "unit", "unit_rate"}
 
 
 class UsageMonth(BaseModel):
