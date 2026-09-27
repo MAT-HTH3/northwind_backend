@@ -90,17 +90,32 @@ async def test_bill_question_streams_tool_call_result_and_text(use, session_fact
 
 
 async def test_hand_off_streams_cards_with_results_then_text(use, session_factory):
+    reading = MeterReadingMention(service=Service.ELECTRICITY, value=41213)
+    use(fake_context(session_factory, hand_off(reading=reading)))
+
+    response = await post_chat("My meter says 41213")
+
+    streamed = events(response)
+    assert [e for e, _ in streamed] == ["tool-call", "tool-call", "text-delta", "done"]
+    receipt, case = streamed[0][1], streamed[1][1]
+    assert (receipt["name"], receipt["result"]["value"]) == ("submit_meter_reading", 41213)
+    assert (case["name"], case["result"]["category"]) == ("create_support_case", "Meter reading")
+    assert receipt["id"] != case["id"]
+
+
+async def test_an_accepted_reading_streams_its_receipt_then_text(use, session_factory):
     reading = MeterReadingMention(service=Service.ELECTRICITY, value=48213)
     use(fake_context(session_factory, hand_off(reading=reading)))
 
     response = await post_chat("My meter says 48213")
 
-    streamed = events(response)
-    assert [e for e, _ in streamed] == ["tool-call", "tool-call", "text-delta", "done"]
-    receipt, case = streamed[0][1], streamed[1][1]
-    assert (receipt["name"], receipt["result"]["value"]) == ("submit_meter_reading", 48213)
-    assert (case["name"], case["result"]["category"]) == ("create_support_case", "Meter reading")
-    assert receipt["id"] != case["id"]
+    (call, receipt), (text, data), (done, _) = events(response)
+    assert (call, receipt["name"]) == ("tool-call", "submit_meter_reading")
+    assert (receipt["result"]["status"], receipt["result"]["revised_amount_due"]) == (
+        "accepted",
+        132.01,
+    )
+    assert text == "text-delta" and "**£132.01**" in data["delta"] and done == "done"
 
 
 @pytest.mark.parametrize("node", ["categorizer", "unified_desktop", "analyzer"])

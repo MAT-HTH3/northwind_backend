@@ -16,12 +16,12 @@ from src.core.config import get_settings
 pytestmark = pytest.mark.skipif(not os.getenv("RUN_LIVE_LLM"), reason="set RUN_LIVE_LLM=1")
 
 CASES = [
-    # message, is_self_service, category (None = any), meter reading (None = must be absent)
+    # message, is_self_service (None = any), category (None = any), reading (None = absent)
     ("Why is my bill so high?", True, None, None),
     ("When will my next payment be taken?", True, None, None),
     ("My bill says I used 486 kWh, is that right?", True, None, None),
-    ("My electricity meter says 48213", False, "Meter reading", 48213),
-    ("it reads 48,213 now", False, "Meter reading", 48213),
+    ("My electricity meter says 48213", None, "Meter reading", 48213),  # code decides (ADR 0004)
+    ("it reads 48,213 now", None, "Meter reading", 48213),
     (
         "Water is leaking from the pipe next to my meter",
         False,
@@ -59,7 +59,8 @@ def gemini():
 async def test_live_categorization(gemini, message, self_service, category, reading):
     result = await categorize(gemini, [HumanMessage(message)], force_handoff=False)
 
-    assert result.is_self_service is self_service, result.reason
+    if self_service is not None:
+        assert result.is_self_service is self_service, result.reason
     if category:
         assert result.category == category, result.reason
     assert (result.meter_reading.value if result.meter_reading else None) == reading

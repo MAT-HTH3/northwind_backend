@@ -99,28 +99,31 @@ async def test_an_earlier_case_counts_as_repeat_contact(graph, session_factory):
     assert sorted(c.priority for c in cases) == [Urgency.MEDIUM, Urgency.LOW]
 
 
-async def test_a_meter_reading_is_saved_and_its_receipt_comes_first(graph, session_factory):
-    reading = MeterReadingMention(service=Service.ELECTRICITY, value=48213)
+async def test_an_implausible_reading_is_handed_off_with_its_receipt_first(graph, session_factory):
+    reading = MeterReadingMention(service=Service.ELECTRICITY, value=41213)
     context = fake_context(session_factory, hand_off_as("Service", reading))
 
-    state = await send(graph, context, "c1", "My meter says 48213")
+    state = await send(graph, context, "c1", "My meter says 41213")
 
     [case], [saved] = await stored(session_factory)
     assert case.category == "Meter reading"  # the Categorizer's rule
     assert (saved.value, saved.status, saved.case_id, saved.read_date) == (
-        48213,
-        ReadingStatus.AWAITING_REVIEW,
+        41213,
+        ReadingStatus.NEEDS_REVIEW,
         case.id,
         TODAY,
     )
     message = state["messages"][-1]
     receipt, case_card = message.additional_kwargs[UI_CARDS]
     assert [receipt["name"], case_card["name"]] == ["submit_meter_reading", "create_support_case"]
-    assert receipt["args"] == {"service": "electricity", "value": 48213}
-    assert MeterReadingReceipt.model_validate(receipt["result"]).reading_id == saved.id
-    assert message.content.startswith(
-        "Thanks, I've recorded your electricity reading of **48,213 kWh**"
+    assert receipt["args"] == {"service": "electricity", "value": 41213}
+    parsed = MeterReadingReceipt.model_validate(receipt["result"])
+    assert (parsed.reading_id, parsed.status, parsed.revised_amount_due) == (
+        saved.id,
+        "needs_review",
+        None,
     )
+    assert message.content.startswith("Thanks for your electricity reading of **41,213 kWh**")
     assert state["meter_reading"] is None
 
 
@@ -153,15 +156,15 @@ async def test_a_different_topic_opens_its_own_case(graph, session_factory):
 
 
 async def test_the_summary_is_written_by_code_from_the_case_facts(graph, session_factory):
-    reading = MeterReadingMention(service=Service.ELECTRICITY, value=48213)
+    reading = MeterReadingMention(service=Service.ELECTRICITY, value=41213)
     await send(
-        graph, fake_context(session_factory, hand_off_as("Service", reading)), "c1", "It says 48213"
+        graph, fake_context(session_factory, hand_off_as("Service", reading)), "c1", "It says 41213"
     )
 
     [case], _ = await stored(session_factory)
     assert case.summary == (
-        "Reading needs checking, raised in chat. The customer said: “It says 48213”. "
-        "Meter reading given: 48,213 kWh (electricity). "
+        "Reading needs checking, raised in chat. The customer said: “It says 41213”. "
+        "Meter reading given: 41,213 kWh (electricity). "
         "Latest bill INV-2609-DEMO01: £169.60, estimated reading, due 5 October. "
         "Earlier case CT-88123: Query about an estimated bill, closed, reopened 1×."
     )
