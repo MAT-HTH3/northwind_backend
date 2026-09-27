@@ -12,7 +12,7 @@ FAKE_SUMMARY = "Sarah queried her estimated September bill."
 
 
 def self_service(_messages: list[AnyMessage]) -> Categorization:
-    return Categorization(is_self_service=True, category="General enquiry", reason="fake")
+    return Categorization(is_self_service=True, category="Service", reason="fake")
 
 
 class FakeLLM:

@@ -1,29 +1,35 @@
 """The Unified Desktop: hands a Hand-off request to a Human Agent (ADR 0001, ADR 0002).
 
-Joins the customer's open case on the same topic, or opens a new Support Case with the routing
-from the category table and a summary for the Human Agent. Saves any meter reading, then
+Joins the customer's open case on the same topic, or opens a new Support Case with the Urgency,
+queue and due date from the Triage Rules (the same rules the agent desk runs) and a summary for
+the Human Agent. Saves any meter reading, then
 replies with fixed text and the receipt and case cards.
 """
 
 import logging
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime
+from typing import get_args
+from zoneinfo import ZoneInfo
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, AnyMessage, HumanMessage, SystemMessage
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from src.agent.categories import FALLBACK, ROUTING, Category, Routing
+from src.agent.categories import FALLBACK, Category, team_for
 from src.agent.transcript import recent_messages, transcript_text
 from src.history import UnifiedCustomerHistory
-from src.models import CustomerReading, Service, SupportCase
+from src.models import CustomerReading, Service, SupportCase, Urgency
 from src.repositories import ReadingRepository, SupportCaseRepository
 from src.schemas.cards import MeterReadingReceipt, SupportCaseCard
+from src.triage import Triage, TriageCase, triage_all
 
 logger = logging.getLogger(__name__)
 
 UI_CARDS = "ui_cards"  # AIMessage.additional_kwargs key; #20 streams these as tool-call events
 TRANSCRIPT_WINDOW = 20
+UK = ZoneInfo("Europe/London")  # the customer's calendar, for "reply by" dates
+NEW_CASE = "new"
 
 SUMMARY_PROMPT = """\
 Write a case summary for the Northwind Human Agent who will pick up this conversation, so the \
@@ -54,10 +60,10 @@ async def hand_off(
     meter_reading: dict | None,
     messages: list[AnyMessage],
     history: UnifiedCustomerHistory,
-    today: date,
+    now: datetime,
 ) -> HandOff:
-    category = category if category in ROUTING else FALLBACK
-    routing = ROUTING[category]
+    category = category if category in get_args(Category) else FALLBACK
+    today = now.astimezone(UK).date()
 
     async with session_factory() as session:
         cases = SupportCaseRepository(session)
@@ -66,14 +72,15 @@ async def hand_off(
         if case is not None:
             await cases.attach_conversation(case, conversation_id)
         else:
+            triage = triage_new_case(account_id, category, messages, history, now)
             case = await cases.create(
                 account_id=account_id,
                 conversation_id=conversation_id,
                 category=category,
-                priority=routing.priority,
-                sla_days=routing.sla_days,
-                queue=routing.queue,
-                expected_response_by=today + timedelta(days=routing.sla_days),
+                priority=Urgency(triage.priority),
+                sla_days=triage.sla_days,
+                queue=triage.queue,
+                expected_response_by=triage.due_at.astimezone(UK).date(),
                 summary=await summarise(llm, category, messages, history),
             )
         reading = None
@@ -88,6 +95,38 @@ async def hand_off(
             )
         await session.commit()
     return HandOff(case=case, joined=joined, reading=reading)
+
+
+def triage_new_case(
+    account_id: str,
+    category: Category,
+    messages: list[AnyMessage],
+    history: UnifiedCustomerHistory,
+    now: datetime,
+) -> Triage:
+    """Runs the Triage Rules on the case about to open, with the customer's earlier Support
+    Cases counted as repeat contacts, exactly as the desk will see it."""
+    earlier = [
+        TriageCase(
+            case_id=c.case_id, account_id=account_id, category=FALLBACK, opened_at=c.opened_at
+        )
+        for c in history.support_cases
+    ]
+    new = TriageCase(
+        case_id=NEW_CASE,
+        account_id=account_id,
+        category=category,
+        opened_at=now,
+        description=customer_words(messages),
+        vulnerable=history.customer.vulnerable,
+        source="assistant",
+    )
+    return triage_all([*earlier, new])[NEW_CASE]
+
+
+def customer_words(messages: list[AnyMessage]) -> str:
+    """The customer's own messages, verbatim: the case description the Triage Rules scan."""
+    return "\n".join(m.text for m in messages if isinstance(m, HumanMessage))
 
 
 async def summarise(
@@ -122,7 +161,7 @@ def fallback_summary(
 
 def reply(result: HandOff) -> AIMessage:
     """Fixed customer text (no LLM) plus the cards, receipt first."""
-    case, routing = result.case, _routing(result.case)
+    case, team = result.case, team_for(result.case.queue)
     due = _long_date(case.expected_response_by)
     parts, cards = [], []
 
@@ -149,12 +188,12 @@ def reply(result: HandOff) -> AIMessage:
 
     if result.joined:
         parts.append(
-            f"I've added this to your open case **{case.id}**, so our {routing.team} will see it. "
+            f"I've added this to your open case **{case.id}**, so our {team} will see it. "
             f"They'll reply by **{due}**."
         )
     else:
         parts.append(
-            f"I've passed this to our {routing.team} with our conversation attached, so you won't "
+            f"I've passed this to our {team} with our conversation attached, so you won't "
             f"need to explain it again. Your case number is **{case.id}** and they'll reply by "
             f"**{due}**."
         )
@@ -174,10 +213,6 @@ def reply(result: HandOff) -> AIMessage:
         }
     )
     return AIMessage("\n\n".join(parts), additional_kwargs={UI_CARDS: cards})
-
-
-def _routing(case: SupportCase) -> Routing:
-    return ROUTING.get(case.category, ROUTING[FALLBACK])
 
 
 def _long_date(value: date) -> str:

@@ -22,16 +22,16 @@ CASES = [
     ("Why is my bill so high?", True, None, None),
     ("When will my next payment be taken?", True, None, None),
     ("My bill says I used 486 kWh, is that right?", True, None, None),
-    ("My electricity meter says 48213", False, "Meter reading review", 48213),
-    ("it reads 48,213 now", False, "Meter reading review", 48213),
+    ("My electricity meter says 48213", False, "Meter reading", 48213),
+    ("it reads 48,213 now", False, "Meter reading", 48213),
     (
         "Water is leaking from the pipe next to my meter",
         False,
-        "Supply fault - repair needed",
+        "Supply",
         None,
     ),
-    ("I want a refund, that estimate was way too high", False, "Billing - dispute or refund", None),
-    ("Can I pay this off in instalments?", False, "Billing - payment arrangement", None),
+    ("I want a refund, that estimate was way too high", False, "Billing", None),
+    ("Can I pay this off in instalments?", False, "Payments", None),
     ("Can I speak to a real person please?", False, None, None),
 ]
 

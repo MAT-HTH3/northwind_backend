@@ -55,7 +55,7 @@ def events(response):
     return parsed
 
 
-def hand_off(category="Meter fault", reading=None):
+def hand_off(category="Supply", reading=None):
     return FakeLLM(
         lambda _m: Categorization(
             is_self_service=False, category=category, reason="fake", meter_reading=reading
@@ -115,7 +115,7 @@ async def test_hand_off_streams_cards_with_results_and_never_leaks_the_summary(
     assert (receipt["name"], receipt["result"]["value"]) == ("submit_meter_reading", 48213)
     assert (case["name"], case["result"]["category"]) == (
         "create_support_case",
-        "Meter reading review",
+        "Meter reading",
     )
     assert receipt["id"] != case["id"]
     assert "INTERNAL SUMMARY" not in response.text.replace(case["result"]["summary"], "")

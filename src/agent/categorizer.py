@@ -10,7 +10,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AnyMessage, SystemMessage
 from pydantic import BaseModel, Field
 
-from src.agent.categories import FALLBACK, METER_READING_REVIEW, Category
+from src.agent.categories import FALLBACK, METER_READING, Category
 from src.agent.transcript import recent_messages
 from src.history import UnifiedCustomerHistory
 from src.models import Service
@@ -81,7 +81,8 @@ async def categorize(
 ) -> Categorization:
     """Classify, then enforce the rules the LLM may not overrule:
 
-    - a meter reading always goes to a Human Agent, as a Meter reading review (ADR 0002)
+    - a meter reading always goes to a Human Agent, in the Meter reading category (ADR 0002; #36
+      changes this to ADR 0004)
     - after the customer answers "No" (force_handoff), the message always goes to a Human Agent
 
     If Gemini fails while one of those rules applies, the hand-off still happens.
@@ -99,9 +100,7 @@ async def categorize(
         )
 
     if result.meter_reading is not None:
-        return result.model_copy(
-            update={"is_self_service": False, "category": METER_READING_REVIEW}
-        )
+        return result.model_copy(update={"is_self_service": False, "category": METER_READING})
     if force_handoff:
         return result.model_copy(update={"is_self_service": False})
     return result

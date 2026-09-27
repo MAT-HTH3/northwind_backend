@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import timedelta
 
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
@@ -8,14 +8,15 @@ from src.agent.categorizer import Categorization, MeterReadingMention
 from src.agent.graph import build_graph
 from src.agent.transcript import transcript_text
 from src.agent.turns import is_held, thread_config, turn_input
-from src.agent.unified_desktop import UI_CARDS
-from src.models import CaseStatus, Priority, ReadingStatus, Service
+from src.agent.unified_desktop import UI_CARDS, UK
+from src.models import CaseStatus, ReadingStatus, Service, Urgency
+from src.models.types import utcnow
 from src.repositories import ReadingRepository, SupportCaseRepository
 from src.schemas.cards import MeterReadingReceipt, SupportCaseCard
 from tests.fakes import FAKE_SUMMARY, FakeLLM, fake_context
 
 ACCOUNT = "ACC-DEMO01"
-TODAY = date.today()
+TODAY = utcnow().astimezone(UK).date()
 
 
 def hand_off_as(category, reading=None):
@@ -45,37 +46,66 @@ def graph():
     return build_graph(InMemorySaver())
 
 
-async def test_a_new_case_is_routed_by_category(graph, session_factory):
-    context = fake_context(session_factory, hand_off_as("Supply fault - repair needed"))
+@pytest.mark.parametrize(
+    ("message", "urgency", "sla_days"),
+    [
+        ("Water is leaking by my meter", Urgency.MEDIUM, 10),  # Supply 20 + assistant 10
+        ("We have no power at all", Urgency.HIGH, 2),  # + no supply 40
+    ],
+)
+async def test_a_new_case_is_triaged_like_the_desk(
+    graph, session_factory, message, urgency, sla_days
+):
+    context = fake_context(session_factory, hand_off_as("Supply"))
 
-    state = await send(graph, context, "c1", "Water is leaking by my meter")
+    state = await send(graph, context, "c1", message)
 
     [case], _ = await stored(session_factory)
+    due = (utcnow() + timedelta(days=sla_days)).astimezone(UK).date()
     assert (case.category, case.priority, case.sla_days, case.queue) == (
-        "Supply fault - repair needed",
-        Priority.HIGH,
-        5,
-        "Field engineers",
+        "Supply",
+        urgency,
+        sla_days,
+        "Field operations",
     )
-    assert case.expected_response_by == TODAY + timedelta(days=5)
+    assert case.expected_response_by == due
     assert case.summary == FAKE_SUMMARY and case.status == CaseStatus.OPEN
 
     message = state["messages"][-1]
     [card] = message.additional_kwargs[UI_CARDS]
     assert card["name"] == "create_support_case"
-    assert SupportCaseCard.model_validate(card["result"]).case_id == case.id
-    assert f"**{case.id}**" in message.content and "our engineers" in message.content
+    parsed = SupportCaseCard.model_validate(card["result"])
+    assert (parsed.case_id, parsed.priority, parsed.queue) == (
+        case.id,
+        urgency.value,
+        "Field operations",
+    )
+    assert f"**{case.id}**" in message.content and "our field team" in message.content
     assert await is_held(graph, "c1")
+
+
+async def test_an_earlier_case_counts_as_repeat_contact(graph, session_factory):
+    context = fake_context(session_factory, hand_off_as("Billing"))
+    await send(graph, context, "c1", "Please call me about my bill")  # Billing 10 + assistant 10
+    async with session_factory() as session:
+        repo = SupportCaseRepository(session)
+        await repo.close(await repo.get((await repo.list_all())[0].id), "information_only")
+        await session.commit()
+
+    await send(graph, context, "c2", "Please call me about my bill again")  # + repeat 20
+
+    cases, _ = await stored(session_factory)
+    assert sorted(c.priority for c in cases) == [Urgency.MEDIUM, Urgency.LOW]
 
 
 async def test_a_meter_reading_is_saved_and_its_receipt_comes_first(graph, session_factory):
     reading = MeterReadingMention(service=Service.ELECTRICITY, value=48213)
-    context = fake_context(session_factory, hand_off_as("General enquiry", reading))
+    context = fake_context(session_factory, hand_off_as("Service", reading))
 
     state = await send(graph, context, "c1", "My meter says 48213")
 
     [case], [saved] = await stored(session_factory)
-    assert case.category == "Meter reading review"  # the Categorizer's rule
+    assert case.category == "Meter reading"  # the Categorizer's rule
     assert (saved.value, saved.status, saved.case_id, saved.read_date) == (
         48213,
         ReadingStatus.AWAITING_REVIEW,
@@ -94,7 +124,7 @@ async def test_a_meter_reading_is_saved_and_its_receipt_comes_first(graph, sessi
 
 
 async def test_a_second_conversation_on_the_same_topic_joins_the_open_case(graph, session_factory):
-    context = fake_context(session_factory, hand_off_as("Billing - dispute or refund"))
+    context = fake_context(session_factory, hand_off_as("Billing"))
     await send(graph, context, "c1", "I want a refund")
 
     state = await send(graph, context, "c2", "Following up on my refund")
@@ -108,29 +138,27 @@ async def test_a_second_conversation_on_the_same_topic_joins_the_open_case(graph
 
 
 async def test_a_different_topic_opens_its_own_case(graph, session_factory):
-    await send(
-        graph, fake_context(session_factory, hand_off_as("Meter fault")), "c1", "Meter broken"
-    )
+    await send(graph, fake_context(session_factory, hand_off_as("Supply")), "c1", "Meter broken")
 
     await send(
         graph,
-        fake_context(session_factory, hand_off_as("Billing - dispute or refund")),
+        fake_context(session_factory, hand_off_as("Billing")),
         "c2",
         "Refund",
     )
 
     cases, _ = await stored(session_factory)
-    assert sorted(c.category for c in cases) == ["Billing - dispute or refund", "Meter fault"]
+    assert sorted(c.category for c in cases) == ["Billing", "Supply"]
 
 
 async def test_the_hand_off_survives_a_summary_failure(graph, session_factory):
-    llm = hand_off_as("Meter fault")
+    llm = hand_off_as("Supply")
     llm.summary = RuntimeError("Gemini unavailable")
 
     await send(graph, fake_context(session_factory, llm), "c1", "My meter display is blank")
 
     [case], _ = await stored(session_factory)
-    assert case.summary.startswith("Sarah Whitfield (North) was handed off as Meter fault.")
+    assert case.summary.startswith("Sarah Whitfield (North) was handed off as Supply.")
     assert "My meter display is blank" in case.summary
 
 

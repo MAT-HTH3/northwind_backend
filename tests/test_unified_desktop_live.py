@@ -31,7 +31,7 @@ async def test_live_summary_after_a_tool_call(session_factory):
         HumanMessage("My meter actually says 48213"),
     ]
 
-    summary = await summarise(gemini, "Meter reading review", messages, history)
+    summary = await summarise(gemini, "Meter reading", messages, history)
 
     assert not summary.startswith("Sarah Whitfield (North) was handed off")  # not the fallback
     assert "48213" in summary.replace(",", "")
