@@ -24,6 +24,7 @@ async def turn_input(
     conversation_id: str,
     account_id: str,
     message: str,
+    force_handoff: bool = False,
 ) -> dict | Command:
     """A held conversation gets the message as a resume; otherwise it starts a new run.
 
@@ -31,11 +32,14 @@ async def turn_input(
     """
     if await is_held(graph, conversation_id):
         return Command(resume=CustomerMessage(kind="customer_message", content=message))
-    return {
+    payload = {
         "messages": [HumanMessage(message)],
         "account_id": account_id,
         "conversation_id": conversation_id,
     }
+    if force_handoff:  # only ever set, never cleared here: the Categorizer clears it
+        payload["force_handoff"] = True
+    return payload
 
 
 def close_input(outcome: str) -> Command:

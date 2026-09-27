@@ -69,7 +69,7 @@ def route_after_categorizer(
 
 async def case_status(state: SupportState, runtime: GraphRuntime) -> dict:
     """Where the customer's cases stand, written by code from the history. No LLM."""
-    return {"messages": [case_status_reply(history_from(state))]}
+    return {"messages": [case_status_reply(history_from(state))], "topic": "Case status checked"}
 
 
 async def accept_reading(state: SupportState, runtime: GraphRuntime) -> dict:
@@ -97,6 +97,7 @@ async def accept_reading(state: SupportState, runtime: GraphRuntime) -> dict:
     return {
         "meter_reading": None,
         "reading_check": None,
+        "topic": "Reading accepted",
         "messages": [written_by_code(text, **{UI_CARDS: [receipt_card(reading, revised)]})],
     }
 
@@ -104,7 +105,16 @@ async def accept_reading(state: SupportState, runtime: GraphRuntime) -> dict:
 async def auto_resolver(state: SupportState, runtime: GraphRuntime) -> dict:
     """Answers a Self-service request. Loops through the tools node while Gemini calls tools."""
     reply = await respond(runtime.context.resolver_llm, state["messages"])
-    return {"messages": [reply]}
+    if reply.tool_calls:
+        return {"messages": [reply]}
+    return {"messages": [reply], "topic": resolver_topic(state["messages"])}
+
+
+def resolver_topic(messages: list) -> str:
+    """ "Bill explained" if the bill card was shown for the latest message."""
+    latest = next(i for i in range(len(messages) - 1, -1, -1) if messages[i].type == "human")
+    shown = any(m.type == "tool" and m.name == "show_bill_breakdown" for m in messages[latest:])
+    return "Bill explained" if shown else "Question answered"
 
 
 def route_after_auto_resolver(state: SupportState) -> Literal["resolver_tools", "__end__"]:
@@ -131,6 +141,7 @@ async def unified_desktop(state: SupportState, runtime: GraphRuntime) -> dict:
         "case_outcome": None,
         "meter_reading": None,
         "reading_check": None,
+        "topic": "Handed to a person",
         "messages": [reply(result)],
     }
 
