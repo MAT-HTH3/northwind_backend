@@ -98,7 +98,14 @@ async def accept_reading(state: SupportState, runtime: GraphRuntime) -> dict:
         "meter_reading": None,
         "reading_check": None,
         "topic": "Reading accepted",
-        "messages": [written_by_code(text, **{UI_CARDS: [receipt_card(reading, revised)]})],
+        "messages": [
+            written_by_code(
+                text,
+                summary="The assistant accepted the customer's meter reading and showed the "
+                "recalculated bill on screen.",
+                **{UI_CARDS: [receipt_card(reading, revised)]},
+            )
+        ],
     }
 
 
@@ -172,7 +179,15 @@ async def acknowledge(state: SupportState, runtime: GraphRuntime) -> dict:
         case = await repo.get(state["case_id"])
         await repo.add_held_message(case, state["conversation_id"], content)
         await session.commit()
-    return {"messages": [written_by_code(acknowledgement(state["case_id"]))]}
+    return {
+        "messages": [
+            written_by_code(
+                acknowledgement(state["case_id"]),
+                summary="The assistant added the customer's message to their open case, which "
+                "a person is handling.",
+            )
+        ]
+    }
 
 
 async def close(state: SupportState, runtime: GraphRuntime) -> dict:

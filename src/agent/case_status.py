@@ -33,7 +33,10 @@ OUTCOME_PHRASES = {
 
 
 def case_status_reply(history: UnifiedCustomerHistory) -> AIMessage:
-    return written_by_code(case_status_text(history))
+    return written_by_code(
+        case_status_text(history),
+        summary="The assistant showed the status of the customer's cases on screen.",
+    )
 
 
 def case_status_text(history: UnifiedCustomerHistory) -> str:

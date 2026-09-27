@@ -19,6 +19,14 @@ from src.models.types import utcnow
 from src.repositories.ids import IdFactory, new_case_id, unique_id
 
 AI_ASSISTANT = "AI Assistant"
+OUTCOME_LABELS = {
+    "information_only": "gave information only",
+    "explained_bill": "explained the bill",
+    "bill_corrected": "corrected the bill",
+    "refund_issued": "issued a refund",
+    "field_visit": "booked a field visit",
+    "other": "other",
+}
 STATUS_LABELS = {
     CaseStatus.NEW: "New",
     CaseStatus.IN_PROGRESS: "In progress",
@@ -188,7 +196,8 @@ class SupportCaseRepository:
         case.status = CaseStatus.RESOLVED
         case.outcome = outcome
         case.closed_at = utcnow()
-        case.timeline.append(TimelineEvent(label=f"Resolved: {outcome}", actor=actor))
+        label = f"Resolved: {OUTCOME_LABELS.get(outcome, outcome)}"
+        case.timeline.append(TimelineEvent(label=label, actor=actor))
         await self.session.flush()
         return [link.conversation_id for link in case.conversations]
 

@@ -34,24 +34,33 @@ def transcript_text(messages: list[AnyMessage]) -> str:
     return "\n".join(lines)
 
 
-WRITTEN_BY_CODE = "written_by_code"  # AIMessage.additional_kwargs flag
+WRITTEN_BY_CODE = "written_by_code"  # AIMessage.additional_kwargs: what the model sees instead
 CODE_REPLY_PLACEHOLDER = (
-    "[The assistant replied with account details shown on the customer's screen.]"
+    "The assistant replied with account details shown on the customer's screen."
 )
 
 
-def written_by_code(text: str, **additional_kwargs) -> AIMessage:
+def written_by_code(text: str, *, summary: str, **additional_kwargs) -> AIMessage:
     """A reply built by code from account records. It may contain case numbers, dates or
-    amounts, so it is never sent to the model (ADR 0003)."""
-    return AIMessage(text, additional_kwargs={WRITTEN_BY_CODE: True, **additional_kwargs})
+    amounts, so the model never sees it (ADR 0003). It sees `summary` instead: what happened,
+    with no data in it, so it still knows the conversation has moved on (e.g. that a person was
+    already arranged)."""
+    return AIMessage(text, additional_kwargs={WRITTEN_BY_CODE: summary, **additional_kwargs})
 
 
 def for_model(messages: list[AnyMessage]) -> list[AnyMessage]:
     """What the model may see (ADR 0003): the customer's words, the model's own general
-    replies and tool statuses. Replies written by code are swapped for a neutral placeholder."""
+    replies and tool statuses. Replies written by code become their data-free summary."""
     return [
-        AIMessage(CODE_REPLY_PLACEHOLDER)
-        if isinstance(m, AIMessage) and m.additional_kwargs.get(WRITTEN_BY_CODE)
-        else m
+        AIMessage(f"[{_summary(m)}]") if isinstance(m, AIMessage) and _summary(m) else m
         for m in messages
     ]
+
+
+def _summary(message: AIMessage) -> str | None:
+    flag = message.additional_kwargs.get(WRITTEN_BY_CODE)
+    if not flag:
+        return None
+    return (
+        flag if isinstance(flag, str) else CODE_REPLY_PLACEHOLDER
+    )  # older checkpoints stored True

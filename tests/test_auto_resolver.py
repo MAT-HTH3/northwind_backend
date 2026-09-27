@@ -155,3 +155,12 @@ async def test_an_unknown_bill_goes_back_to_gemini_instead_of_crashing(session_f
     assert result.status == "error" and result.artifact is None
     assert "latest bill" in result.content and "INV-" not in result.content
     assert state["messages"][-1].content == "I can see your August and September bills."
+
+
+def test_optional_line_fields_are_left_out_not_null(history):
+    """The contract types quantity / unit / unit_rate as optional; the widget crashes on null."""
+    lines = build_bill_breakdown(history).model_dump(mode="json")["lines"]
+
+    vat = next(line for line in lines if line["label"].startswith("VAT"))
+    assert vat == {"service": "other", "label": "VAT (5% on energy)", "amount": 6.87}
+    assert lines[0]["quantity"] == 486  # present when there is one

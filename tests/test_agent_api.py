@@ -163,6 +163,8 @@ async def test_resolving_releases_every_held_conversation(desk):
     ).json()
 
     assert (resolved["status"], resolved["resolution"]) == ("resolved", "field_visit")
+    timeline = (await call("GET", f"/api/agent/cases/{case_id}")).json()["timeline"]
+    assert timeline[-1]["label"] == "Resolved: booked a field visit"
     assert resolved["closed_at"] is not None
     assert not await is_held(graph, "c1") and not await is_held(graph, "c2")
 
@@ -225,3 +227,26 @@ async def test_unknown_records_are_404(desk, method, path, body):
     desk()
 
     assert (await call(method, path, body)).status_code == 404
+
+
+async def test_the_desk_transcript_has_no_markdown(desk):
+    desk()
+    case_id = (await open_case())["case_id"]
+
+    detail = (await call("GET", f"/api/agent/cases/{case_id}")).json()
+
+    reply = detail["transcript"][-1]["text"]
+    assert case_id in reply and "**" not in reply  # the widget showed it in bold
+
+
+async def test_changes_are_credited_to_the_assigned_agent(desk):
+    desk()
+    case_id = (await open_case())["case_id"]
+    await call("PATCH", f"/api/agent/cases/{case_id}", {"assignee": AGENT})
+
+    await call(
+        "PATCH", f"/api/agent/cases/{case_id}", {"status": "resolved", "resolution": "other"}
+    )
+
+    timeline = (await call("GET", f"/api/agent/cases/{case_id}")).json()["timeline"]
+    assert timeline[-1]["actor"] == AGENT
