@@ -1,4 +1,3 @@
-import json
 from datetime import date
 
 import pytest
@@ -7,6 +6,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 
 from src.agent.bill_breakdown import BillNotFoundError, build_bill_breakdown
 from src.agent.graph import build_graph
+from src.agent.tools import BILL_SHOWN
 from src.agent.transcript import recent_messages
 from src.agent.turns import is_held, thread_config, turn_input
 from src.history import build_history
@@ -40,15 +40,36 @@ def test_latest_bill_breakdown(history):
 
 
 def test_an_older_bill_has_no_previous_amount_and_no_later_usage(history):
-    b = build_bill_breakdown(history, "INV-2608-DEMO01")
+    b = build_bill_breakdown(history, "2026-08")
 
     assert (b.amount_due, b.previous_amount) == (118.39, None)
     assert b.usage_history[-1].month == "2026-08"
 
 
-def test_unknown_bill_id_raises(history):
-    with pytest.raises(BillNotFoundError):
-        build_bill_breakdown(history, "INV-0000")
+def test_unknown_month_raises_without_naming_any_bill(history):
+    with pytest.raises(BillNotFoundError) as error:
+        build_bill_breakdown(history, "2026-07")
+
+    assert "INV-" not in str(error.value)  # the model reads this message (ADR 0003)
+
+
+def test_the_card_extras(history):
+    b = build_bill_breakdown(history)
+
+    assert b.tariff_name == "Standard Variable"
+    [change] = b.rate_changes  # 1 July, within 90 days of the period end
+    assert (change.label, change.unit, change.from_rate, change.to_rate) == (
+        "Electricity unit rate",
+        "kWh",
+        0.241,
+        0.2486,
+    )
+    assert b.balance.model_dump(mode="json") == {
+        "previous_balance": 118.39,
+        "payments_received": 118.39,
+        "last_payment_date": "2026-09-05",
+        "current_balance": 169.6,
+    }
 
 
 def test_a_rate_change_since_the_previous_bill_is_a_reason(history):
@@ -102,7 +123,8 @@ async def test_bill_question_calls_the_tool_then_answers(session_factory):
 
     human, call, result, answer = state["messages"]
     assert call.tool_calls[0]["name"] == "show_bill_breakdown"
-    card = BillBreakdown.model_validate(json.loads(result.content))
+    assert result.content == BILL_SHOWN  # all the model sees (ADR 0003)
+    card = BillBreakdown.model_validate(result.artifact)  # what the widget gets
     assert (result.tool_call_id, card.amount_due) == ("c1", 169.6)
     assert answer.content.startswith("Your bill is **£169.60**")
     assert len(llm.tool_calls) == 2  # Gemini saw the tool result before answering
@@ -115,7 +137,7 @@ async def test_an_unknown_bill_goes_back_to_gemini_instead_of_crashing(session_f
             AIMessage(
                 "",
                 tool_calls=[
-                    {"id": "c1", "name": "show_bill_breakdown", "args": {"bill_id": "INV-JULY"}}
+                    {"id": "c1", "name": "show_bill_breakdown", "args": {"month": "2026-07"}}
                 ],
             ),
             AIMessage("I can see your August and September bills."),
@@ -130,6 +152,6 @@ async def test_an_unknown_bill_goes_back_to_gemini_instead_of_crashing(session_f
     state = await graph.ainvoke(payload, thread_config("c1"), context=context)
 
     result = state["messages"][2]
-    assert result.status == "error"
-    assert "INV-2609-DEMO01" in result.content and "INV-2608-DEMO01" in result.content
+    assert result.status == "error" and result.artifact is None
+    assert "latest bill" in result.content and "INV-" not in result.content
     assert state["messages"][-1].content == "I can see your August and September bills."

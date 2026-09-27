@@ -19,8 +19,6 @@ from src.legacy import get_legacy_systems
 
 pytestmark = pytest.mark.skipif(not os.getenv("RUN_LIVE_LLM"), reason="set RUN_LIVE_LLM=1")
 
-ISO_DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
-
 
 @pytest.fixture
 def context(session_factory):
@@ -43,18 +41,25 @@ async def ask(context, message):
     return state["messages"][-1].text, tools
 
 
-async def test_live_bill_question_shows_the_card(context):
+FIGURES = re.compile(r"£|\d")  # no amounts, dates or readings in the model's own words
+
+
+async def test_live_bill_question_shows_the_card_and_quotes_no_figures(context):
     reply, tools = await ask(context, "Why is my bill so high?")
 
     assert tools == ["show_bill_breakdown"]
-    assert "169.60" in reply
-    assert not ISO_DATE.search(reply)
+    assert not FIGURES.search(reply), reply
     assert "recalculat" not in reply.lower()
 
 
-async def test_live_payment_question_answers_without_a_card(context):
+async def test_live_payment_question_shows_the_card_too(context):
     reply, tools = await ask(context, "When is my payment due?")
 
+    assert tools == ["show_bill_breakdown"]
+    assert not FIGURES.search(reply), reply
+
+
+async def test_live_complaint_question_shows_no_card(context):
+    reply, tools = await ask(context, "I want to complain about how long this is taking")
+
     assert tools == []
-    assert "5 October" in reply
-    assert not ISO_DATE.search(reply)

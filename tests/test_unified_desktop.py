@@ -6,14 +6,14 @@ from langgraph.checkpoint.memory import InMemorySaver
 
 from src.agent.categorizer import Categorization, MeterReadingMention
 from src.agent.graph import build_graph
-from src.agent.transcript import transcript_text
+from src.agent.transcript import WRITTEN_BY_CODE, transcript_text
 from src.agent.turns import is_held, thread_config, turn_input
 from src.agent.unified_desktop import UI_CARDS, UK
 from src.models import CaseStatus, ReadingStatus, Service, Urgency
 from src.models.types import utcnow
 from src.repositories import ReadingRepository, SupportCaseRepository
 from src.schemas.cards import MeterReadingReceipt, SupportCaseCard
-from tests.fakes import FAKE_SUMMARY, FakeLLM, fake_context
+from tests.fakes import FakeLLM, fake_context
 
 ACCOUNT = "ACC-DEMO01"
 TODAY = utcnow().astimezone(UK).date()
@@ -69,7 +69,8 @@ async def test_a_new_case_is_triaged_like_the_desk(
         "Field operations",
     )
     assert case.expected_response_by == due
-    assert case.summary == FAKE_SUMMARY and case.status == CaseStatus.OPEN
+    assert case.summary.startswith("Other supply problem, raised in chat.")
+    assert case.status == CaseStatus.OPEN
 
     message = state["messages"][-1]
     [card] = message.additional_kwargs[UI_CARDS]
@@ -151,15 +152,29 @@ async def test_a_different_topic_opens_its_own_case(graph, session_factory):
     assert sorted(c.category for c in cases) == ["Billing", "Supply"]
 
 
-async def test_the_hand_off_survives_a_summary_failure(graph, session_factory):
-    llm = hand_off_as("Supply")
-    llm.summary = RuntimeError("Gemini unavailable")
-
-    await send(graph, fake_context(session_factory, llm), "c1", "My meter display is blank")
+async def test_the_summary_is_written_by_code_from_the_case_facts(graph, session_factory):
+    reading = MeterReadingMention(service=Service.ELECTRICITY, value=48213)
+    await send(
+        graph, fake_context(session_factory, hand_off_as("Service", reading)), "c1", "It says 48213"
+    )
 
     [case], _ = await stored(session_factory)
-    assert case.summary.startswith("Sarah Whitfield (North) was handed off as Supply.")
-    assert "My meter display is blank" in case.summary
+    assert case.summary == (
+        "Reading needs checking, raised in chat. The customer said: “It says 48213”. "
+        "Meter reading given: 48,213 kWh (electricity). "
+        "Latest bill INV-2609-DEMO01: £169.60, estimated reading, due 5 October. "
+        "Earlier case CT-88123: Query about an estimated bill, closed, reopened 1×."
+    )
+
+
+async def test_hand_off_replies_are_marked_as_written_by_code(graph, session_factory):
+    await send(graph, fake_context(session_factory, hand_off_as("Supply")), "c1", "No power")
+
+    state = await send(graph, fake_context(session_factory), "c1", "Any update?")
+
+    hand_off_reply, _, acknowledgement = state["messages"][-3:]
+    assert hand_off_reply.additional_kwargs[WRITTEN_BY_CODE]
+    assert acknowledgement.additional_kwargs[WRITTEN_BY_CODE]
 
 
 def test_transcript_text_shows_cards_and_skips_tool_data():
