@@ -27,12 +27,16 @@ _Avoid_: Customer context, 360 view, combined history
 ### Requests
 
 **Self-service request**:
-A customer request the AI Assistant can fully resolve with the data and actions it has, such as explaining a bill or giving a payment date.
+A customer request the AI Assistant can fully resolve with the data and actions it has, such as explaining a bill, giving a payment date, or accepting a plausible Customer Reading.
 _Avoid_: Info request, simple query
 
 **Hand-off request**:
-A customer request that needs a Human Agent: a physical repair, a manual billing exception (refund, dispute, payment plan), a submitted meter reading, or the customer explicitly asking for a person.
+A customer request that needs a Human Agent: a physical repair, a manual billing exception (refund, dispute, payment plan), a Customer Reading that fails the plausibility check, or the customer explicitly asking for a person.
 _Avoid_: Escalation, complex query
+
+**Customer Reading**:
+A meter reading the customer types in chat. If it is plausible for their meter, it is accepted and the bill is re-priced by code. If not, it goes to a Human Agent for review.
+_Avoid_: Submitted reading, self-read
 
 ### Conversation outcomes
 
@@ -54,10 +58,22 @@ _Avoid_: Abandoned, resolved
 The record created when a Hand-off request is handed to a Human Agent, carrying the customer's history and conversations so the customer never has to explain twice. One Support Case can gather several conversations about the same problem. While it is open, the Human Agent owns those conversations and the AI Assistant takes no further action in them.
 _Avoid_: Ticket, escalation
 
-**Priority**:
-How urgent a Support Case is: high, mid or low. The case's category sets its Priority, and the Priority sets how many days the customer is promised a response within.
-_Avoid_: P1/P2/P3, severity
+**Triage Rules**:
+The points-based scorecard that sets a Support Case's Urgency, queue and due date from its facts (category, the customer's words, vulnerability, repeat contact, disputed amount, transfers). The same rules run on the agent desk and in the backend, so both always agree.
+_Avoid_: Routing table, AI triage
+
+**Urgency**:
+How urgent a Support Case is: High, Medium or Low. The Triage Rules set it, a Human Agent can override it, and it sets how many days the customer is promised a response within. Stored in the API as P1 (High), P2 (Medium) and P3 (Low).
+_Avoid_: Priority, severity, high/mid/low
+
+**Case Status**:
+Where a Support Case is in its work: New, In progress, Waiting for customer (all open, so its conversations are held) or Resolved (closed). Changing a Resolved case back to another status reopens it, but does not hold its conversations again.
+_Avoid_: Open/closed as statuses, state
 
 **Case Outcome**:
-The Human Agent's written resolution that closes a Support Case (e.g. "Refunded £37.59, corrected bill sent"). It is delivered to the customer outside the chat and remembered in the conversation so the AI Assistant can refer to it later.
-_Avoid_: Reply, resolution note
+The reason a Human Agent picks when resolving a Support Case: information only, bill explained, bill corrected, refund issued, field visit, or other. It is the only part of the resolution the customer's side can learn, through a line written by code.
+_Avoid_: Resolution note, reply
+
+**Feedback Note**:
+Tags and a written note a Human Agent adds to a Support Case, for other Human Agents only. Shown verbatim on the agent desk; never shown to the customer and never sent to the model.
+_Avoid_: Comment, internal note, agent summary
