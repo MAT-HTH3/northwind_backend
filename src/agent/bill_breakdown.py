@@ -4,12 +4,14 @@ The reasons a bill changed are worked out here, in code, so the figures the cust
 never the LLM's arithmetic.
 """
 
-from datetime import date
+from datetime import date, timedelta
 
 from src.history.models import Bill, UnifiedCustomerHistory
-from src.schemas.bill import BillBreakdown, BillLine, UsageMonth
+from src.schemas.bill import BillBalance, BillBreakdown, BillLine, RateChange, UsageMonth
 
 TYPICAL_WINDOW = 3  # actual months averaged for "typical" usage ("last three" in the text)
+RATE_CHANGE_WINDOW = timedelta(days=90)  # "time-adjusted rates" shown on the full breakdown
+COMPONENT_LABELS = {"unit": "unit rate", "standing": "standing charge"}
 
 
 class BillNotFoundError(LookupError):
@@ -17,18 +19,21 @@ class BillNotFoundError(LookupError):
 
 
 def build_bill_breakdown(
-    history: UnifiedCustomerHistory, bill_id: str | None = None
+    history: UnifiedCustomerHistory, month: str | None = None
 ) -> BillBreakdown:
+    """The latest bill, or the one whose period ends in `month` ("YYYY-MM")."""
     if history.billing is None or not history.billing.bills:
-        raise BillNotFoundError("No bills in Legacy Billing for this customer")
+        raise BillNotFoundError("There are no bills to show.")
     bills = history.billing.bills  # newest first
-    if not bill_id:  # Gemini sometimes sends "" for "the latest"
+    if not month:  # Gemini sometimes sends "" for "the latest"
         index = 0
     else:
-        index = next((i for i, b in enumerate(bills) if b.bill_id == bill_id), None)
+        index = next((i for i, b in enumerate(bills) if f"{b.period_end:%Y-%m}" == month), None)
     if index is None:
-        available = ", ".join(f"{b.bill_id} ({b.period_end:%B %Y})" for b in bills)
-        raise BillNotFoundError(f"There is no bill {bill_id}. Available bills: {available}.")
+        # The model reads this, so it names no bills (ADR 0003).
+        raise BillNotFoundError(
+            "There is no bill for that month. Call again without a month to show the latest bill."
+        )
     bill = bills[index]
     previous = bills[index + 1] if index + 1 < len(bills) else None
 
@@ -49,6 +54,57 @@ def build_bill_breakdown(
             if u.month <= bill.period_end.strftime("%Y-%m")
         ],
         change_reasons=change_reasons(history, bill, previous),
+        tariff_name=history.billing.tariff_name,
+        rate_changes=rate_changes(history, bill),
+        balance=balance(bill, previous),
+    )
+
+
+def rate_changes(history: UnifiedCustomerHistory, bill: Bill) -> list[RateChange]:
+    """Rate changes in the 90 days up to the end of the bill period, with the rate they replaced."""
+    tariffs = sorted(
+        history.billing.tariffs if history.billing else [], key=lambda t: t.effective_from
+    )
+    changes = []
+    for i, tariff in enumerate(tariffs):
+        if not (bill.period_end - RATE_CHANGE_WINDOW <= tariff.effective_from <= bill.period_end):
+            continue
+        before = next(
+            (
+                t
+                for t in reversed(tariffs[:i])
+                if t.service == tariff.service and t.component == tariff.component
+            ),
+            None,
+        )
+        if before and before.rate != tariff.rate:
+            unit = (
+                ("kWh" if tariff.service == "electricity" else "m³")
+                if tariff.component == "unit"
+                else "day"
+            )
+            label = f"{tariff.service.capitalize()} {COMPONENT_LABELS[tariff.component]}"
+            changes.append(
+                RateChange(
+                    label=label,
+                    unit=unit,
+                    from_rate=before.rate,
+                    to_rate=tariff.rate,
+                    effective_date=tariff.effective_from,
+                )
+            )
+    return changes
+
+
+def balance(bill: Bill, previous: Bill | None) -> BillBalance:
+    """What was owed from the previous bill, what was paid, and what is owed now."""
+    previous_balance = previous.amount_due if previous else 0.0
+    paid = previous_balance if previous and previous.paid else 0.0
+    return BillBalance(
+        previous_balance=previous_balance,
+        payments_received=paid,
+        last_payment_date=previous.due_date if previous and previous.paid else None,
+        current_balance=round(previous_balance - paid + bill.amount_due, 2),
     )
 
 

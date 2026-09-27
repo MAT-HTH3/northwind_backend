@@ -2,7 +2,7 @@
 
     text-delta   Auto-Resolver tokens, and the fixed text from the Unified Desktop and Acknowledge
     tool-call    Auto-Resolver tool calls; hand-off cards carry their result directly
-    tool-result  results of the Auto-Resolver's tools
+    tool-result  results of the Auto-Resolver's tools: the ToolMessage's artifact (ADR 0003)
     done / error end of the reply
 
 Only the nodes listed here reach the customer. Other LLM calls (the Categorizer's structured
@@ -56,11 +56,9 @@ def from_message(node: str, message: Any) -> list[Event]:
         return events
 
     if node == TOOL_NODE and isinstance(message, ToolMessage):
-        is_error = message.status == "error"
-        try:
-            result = json.loads(message.text)
-        except ValueError:
-            result = {"error": message.text}
+        # The widget gets the full record (the artifact); the model only saw a short status.
+        is_error = message.status == "error" or message.artifact is None
+        result = {"error": message.text} if is_error else message.artifact
         return [
             ("tool-result", {"id": message.tool_call_id, "result": result, "is_error": is_error})
         ]

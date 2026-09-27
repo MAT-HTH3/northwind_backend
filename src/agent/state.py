@@ -24,7 +24,10 @@ class SupportState(TypedDict, total=False):
     # The Categorizer's decision for the current message.
     is_self_service: bool
     category: str | None
+    subject: str | None
     reason: str | None
+    disputed_amount: float | None
+    case_status_request: bool
     # A meter reading given in the current message ({"service", "value"}), for the hand-off.
     meter_reading: dict[str, Any] | None
 
