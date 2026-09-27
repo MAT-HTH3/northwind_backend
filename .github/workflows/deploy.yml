@@ -1,4 +1,4 @@
-name: Deploy backend
+name: Deploy frontend
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /opt/northwind-backend
+            cd /opt/northwind
             git pull --ff-only origin main
             docker compose build
             docker compose up -d
