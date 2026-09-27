@@ -30,6 +30,8 @@ class SupportState(TypedDict, total=False):
     case_status_request: bool
     # A meter reading given in the current message ({"service", "value"}), for the hand-off.
     meter_reading: dict[str, Any] | None
+    # What code decided about that reading: "accepted" or "needs_review" (ADR 0004).
+    reading_check: str | None
 
     # The Support Case holding this conversation, and how the Human Agent closed it.
     case_id: str | None

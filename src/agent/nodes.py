@@ -7,14 +7,17 @@ from langgraph.runtime import Runtime
 from langgraph.types import Command, interrupt
 
 from src.agent.auto_resolver import respond
+from src.agent.cards import UI_CARDS, receipt_card
 from src.agent.categorizer import categorize
 from src.agent.context import GraphContext
+from src.agent.readings import check_reading, revised_amount
 from src.agent.state import ResumeValue, SupportState, history_from
 from src.agent.transcript import written_by_code
-from src.agent.unified_desktop import hand_off, reply
+from src.agent.unified_desktop import UK, hand_off, reply
 from src.history import build_history
+from src.models import ReadingStatus, Service
 from src.models.types import utcnow
-from src.repositories import SupportCaseRepository
+from src.repositories import ReadingRepository, SupportCaseRepository
 
 GraphRuntime = Runtime[GraphContext]
 
@@ -28,13 +31,21 @@ async def analyzer(state: SupportState, runtime: GraphRuntime) -> dict:
 
 
 async def categorizer(state: SupportState, runtime: GraphRuntime) -> dict:
+    force_handoff = state.get("force_handoff", False)
     result = await categorize(
-        runtime.context.categorizer_llm,
-        state["messages"],
-        force_handoff=state.get("force_handoff", False),
+        runtime.context.categorizer_llm, state["messages"], force_handoff=force_handoff
     )
+    is_self_service, reading_check = result.is_self_service, None
+    if result.meter_reading is not None:
+        # Code, not the model, decides whether a reading is accepted (ADR 0004).
+        check = check_reading(
+            history_from(state), result.meter_reading.service, result.meter_reading.value
+        )
+        reading_check = "accepted" if check.plausible and not force_handoff else "needs_review"
+        is_self_service = reading_check == "accepted"
     return {
-        "is_self_service": result.is_self_service,
+        "is_self_service": is_self_service,
+        "reading_check": reading_check,
         "category": result.category,
         "subject": result.subject,
         "disputed_amount": result.disputed_amount,
@@ -45,8 +56,41 @@ async def categorizer(state: SupportState, runtime: GraphRuntime) -> dict:
     }
 
 
-def route_after_categorizer(state: SupportState) -> Literal["auto_resolver", "unified_desktop"]:
+def route_after_categorizer(
+    state: SupportState,
+) -> Literal["accept_reading", "auto_resolver", "unified_desktop"]:
+    if state.get("reading_check") == "accepted":
+        return "accept_reading"
     return "auto_resolver" if state["is_self_service"] else "unified_desktop"
+
+
+async def accept_reading(state: SupportState, runtime: GraphRuntime) -> dict:
+    """A plausible Customer Reading: saved, the bill re-priced, a receipt shown. No LLM, no case."""
+    mention, history = state["meter_reading"], history_from(state)
+    check = check_reading(history, mention["service"], mention["value"])
+    revised = revised_amount(history, mention["service"], check.usage)
+    async with runtime.context.session_factory() as session:
+        reading = await ReadingRepository(session).create(
+            account_id=state["account_id"],
+            conversation_id=state["conversation_id"],
+            service=Service(mention["service"]),
+            value=mention["value"],
+            read_date=utcnow().astimezone(UK).date(),
+            status=ReadingStatus.ACCEPTED,
+        )
+        await session.commit()
+    previous = history.billing.bills[0].amount_due if history.billing else None
+    direction = "comes down to" if previous is not None and revised < previous else "is now"
+    text = (
+        f"Thanks, I've recorded your {reading.service.value} reading of "
+        f"**{reading.value:,} {reading.unit}**. Your latest bill has been recalculated with it, "
+        f"so it {direction} **£{revised:,.2f}**."
+    )
+    return {
+        "meter_reading": None,
+        "reading_check": None,
+        "messages": [written_by_code(text, **{UI_CARDS: [receipt_card(reading, revised)]})],
+    }
 
 
 async def auto_resolver(state: SupportState, runtime: GraphRuntime) -> dict:
@@ -78,6 +122,7 @@ async def unified_desktop(state: SupportState, runtime: GraphRuntime) -> dict:
         "case_id": result.case.id,
         "case_outcome": None,
         "meter_reading": None,
+        "reading_check": None,
         "messages": [reply(result)],
     }
 
