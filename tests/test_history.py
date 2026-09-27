@@ -8,7 +8,7 @@ from src.agent.state import history_from
 from src.agent.turns import thread_config, turn_input
 from src.history import UnknownCustomerError, build_history
 from src.legacy import get_legacy_systems
-from src.models import Priority, Service
+from src.models import Service, Urgency
 from src.repositories import ReadingRepository, SupportCaseRepository
 from tests.fakes import fake_context
 
@@ -65,15 +65,15 @@ async def test_our_support_cases_and_readings_are_included(session_factory):
         cases = SupportCaseRepository(session)
         fields = dict(
             account_id=ACCOUNT,
-            priority=Priority.MID,
+            priority=Urgency.MEDIUM,
             sla_days=10,
             queue="Billing specialists",
             expected_response_by=date(2026, 10, 6),
             summary="…",
         )
-        closed = await cases.create(conversation_id="c1", category="Meter fault", **fields)
+        closed = await cases.create(conversation_id="c1", category="Supply", **fields)
         await cases.close(closed, "Meter replaced.")
-        open_ = await cases.create(conversation_id="c2", category="Meter reading review", **fields)
+        open_ = await cases.create(conversation_id="c2", category="Meter reading", **fields)
         await ReadingRepository(session).create(
             account_id=ACCOUNT,
             case_id=open_.id,

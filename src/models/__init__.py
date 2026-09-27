@@ -9,8 +9,8 @@ from src.models.support_case import (
     CaseConversation,
     CaseStatus,
     HeldMessage,
-    Priority,
     SupportCase,
+    Urgency,
 )
 
 __all__ = [
@@ -19,9 +19,9 @@ __all__ = [
     "CaseStatus",
     "CustomerReading",
     "HeldMessage",
-    "Priority",
     "ReadingStatus",
     "ResolutionAnswer",
     "Service",
     "SupportCase",
+    "Urgency",
 ]

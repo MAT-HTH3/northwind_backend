@@ -8,10 +8,12 @@ from src.core.db import Base
 from src.models.types import UTCDateTime, str_enum, utcnow
 
 
-class Priority(StrEnum):
-    HIGH = "high"
-    MID = "mid"
-    LOW = "low"
+class Urgency(StrEnum):
+    """Stored as the API's P1/P2/P3 (CONTEXT.md "Urgency")."""
+
+    HIGH = "P1"
+    MEDIUM = "P2"
+    LOW = "P3"
 
 
 class CaseStatus(StrEnum):
@@ -27,7 +29,8 @@ class SupportCase(Base):
     id: Mapped[str] = mapped_column(String(16), primary_key=True)  # "NW-231904"
     account_id: Mapped[str] = mapped_column(String(32), index=True)
     category: Mapped[str] = mapped_column(String(64))
-    priority: Mapped[Priority] = mapped_column(str_enum(Priority, "priority"))
+    # Urgency; the column keeps the API contract's name.
+    priority: Mapped[Urgency] = mapped_column(str_enum(Urgency, "priority"))
     sla_days: Mapped[int]
     queue: Mapped[str] = mapped_column(String(64))
     expected_response_by: Mapped[date]
