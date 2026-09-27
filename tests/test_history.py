@@ -12,7 +12,7 @@ from src.models import Priority, Service
 from src.repositories import ReadingRepository, SupportCaseRepository
 from tests.fakes import fake_context
 
-ACCOUNT = "ACC-372876"
+ACCOUNT = "ACC-DEMO01"
 
 
 async def history(session_factory):
@@ -42,7 +42,7 @@ async def test_legacy_formats_are_normalised(session_factory):
     water = next(m for m in h.meters if m.service == "water")
     assert (water.unit, water.reads[-1].value) == ("m³", 612.4)  # litres in Metering
     assert h.past_cases[0].reference == "CT-88123"
-    assert h.past_cases[0].category == "Billing - estimated read"
+    assert h.past_cases[0].category == "Query about an estimated bill"
     assert h.past_cases[0].times_reopened == 1
 
 

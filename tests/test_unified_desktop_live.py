@@ -19,7 +19,7 @@ pytestmark = pytest.mark.skipif(not os.getenv("RUN_LIVE_LLM"), reason="set RUN_L
 
 
 async def test_live_summary_after_a_tool_call(session_factory):
-    history = await build_history("ACC-372876", get_legacy_systems(), session_factory)
+    history = await build_history("ACC-DEMO01", get_legacy_systems(), session_factory)
     gemini = ChatGoogleGenerativeAI(
         model=get_settings().gemini_resolver_model, api_key=dotenv_values(".env")["GEMINI_API_KEY"]
     )
@@ -33,5 +33,5 @@ async def test_live_summary_after_a_tool_call(session_factory):
 
     summary = await summarise(gemini, "Meter reading review", messages, history)
 
-    assert not summary.startswith("Sarah Whitfield (Dunmoor) was handed off")  # not the fallback
+    assert not summary.startswith("Sarah Whitfield (North) was handed off")  # not the fallback
     assert "48213" in summary.replace(",", "")

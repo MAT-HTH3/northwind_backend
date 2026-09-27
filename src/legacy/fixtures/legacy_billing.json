@@ -1,13 +1,13 @@
 {
-  "_comment": "Legacy Billing (Dunmoor platform). Money in pence, dates DDMMYYYY, codes upper-case. Synthetic data.",
+  "_comment": "Legacy Billing (old billing platform). Money in pence, dates DDMMYYYY, codes upper-case. Synthetic data.",
   "ACCOUNTS": [
     {
-      "ACCT_NO": "0372876",
+      "ACCT_NO": "0900001",
       "PAY_METHOD": "DD",
       "DD_DAY": 5,
       "INVOICES": [
         {
-          "INV_REF": "INV-2609-372876",
+          "INV_REF": "INV-2609-DEMO01",
           "PERIOD_FROM": "14082026",
           "PERIOD_TO": "13092026",
           "ISSUED": "15092026",
@@ -24,7 +24,7 @@
           ]
         },
         {
-          "INV_REF": "INV-2608-372876",
+          "INV_REF": "INV-2608-DEMO01",
           "PERIOD_FROM": "14072026",
           "PERIOD_TO": "13082026",
           "ISSUED": "15082026",

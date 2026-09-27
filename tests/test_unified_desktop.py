@@ -14,7 +14,7 @@ from src.repositories import ReadingRepository, SupportCaseRepository
 from src.schemas.cards import MeterReadingReceipt, SupportCaseCard
 from tests.fakes import FAKE_SUMMARY, FakeLLM, fake_context
 
-ACCOUNT = "ACC-372876"
+ACCOUNT = "ACC-DEMO01"
 TODAY = date.today()
 
 
@@ -130,7 +130,7 @@ async def test_the_hand_off_survives_a_summary_failure(graph, session_factory):
     await send(graph, fake_context(session_factory, llm), "c1", "My meter display is blank")
 
     [case], _ = await stored(session_factory)
-    assert case.summary.startswith("Sarah Whitfield (Dunmoor) was handed off as Meter fault.")
+    assert case.summary.startswith("Sarah Whitfield (North) was handed off as Meter fault.")
     assert "My meter display is blank" in case.summary
 
 

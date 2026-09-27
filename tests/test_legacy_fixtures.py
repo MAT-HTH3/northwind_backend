@@ -3,7 +3,7 @@ that contradicts the meter readings."""
 
 from src.legacy import get_legacy_systems
 
-ACCOUNT = "ACC-372876"
+ACCOUNT = "ACC-DEMO01"
 
 
 async def test_every_crm_cross_reference_resolves():
@@ -18,7 +18,7 @@ async def test_every_crm_cross_reference_resolves():
 
 async def test_invoice_lines_add_up_and_the_demo_bill_is_169_60():
     legacy = get_legacy_systems()
-    account = await legacy.billing.get_account("0372876")
+    account = await legacy.billing.get_account("0900001")
 
     for invoice in account.invoices:
         assert sum(line.amt_pence for line in invoice.lines) == invoice.total_pence
@@ -27,7 +27,7 @@ async def test_invoice_lines_add_up_and_the_demo_bill_is_169_60():
 
 async def test_billed_usage_matches_the_meter_reads_for_each_period():
     legacy = get_legacy_systems()
-    account = await legacy.billing.get_account("0372876")
+    account = await legacy.billing.get_account("0900001")
     reads = {
         read.read_at.strftime("%d%m%Y"): read.value
         for read in (await legacy.metering.get_meter_point("1900012345678")).reads

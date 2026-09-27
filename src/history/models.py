@@ -17,6 +17,7 @@ class CustomerDetails(BaseModel):
     first_name: str
     last_name: str
     region: str
+    vulnerable: bool
     email: str
     phone: str
     preferred_channel: str

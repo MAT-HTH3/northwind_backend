@@ -15,7 +15,7 @@ MESSAGES = [HumanMessage("hello")]
 
 @pytest.fixture
 async def history(session_factory):
-    return await build_history("ACC-372876", get_legacy_systems(), session_factory)
+    return await build_history("ACC-DEMO01", get_legacy_systems(), session_factory)
 
 
 def llm_says(**fields) -> FakeLLM:
@@ -69,7 +69,7 @@ async def test_the_prompt_carries_the_history_and_the_latest_message(history):
     await categorize(llm, [HumanMessage("Why is my bill so high?")], history, force_handoff=False)
 
     [sent] = llm.calls
-    assert "INV-2609-372876" in sent[0].content  # the Unified Customer History
+    assert "INV-2609-DEMO01" in sent[0].content  # the Unified Customer History
     assert sent[-1].content == "Why is my bill so high?"
 
 

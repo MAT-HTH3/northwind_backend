@@ -9,14 +9,14 @@ async def get(path: str):
 
 
 async def test_profile_matches_the_widget_contract():
-    response = await get("/api/customers/ACC-372876")
+    response = await get("/api/customers/ACC-DEMO01")
 
     assert response.status_code == 200
     assert response.json() == {
-        "account_id": "ACC-372876",
+        "account_id": "ACC-DEMO01",
         "first_name": "Sarah",
         "last_name": "Whitfield",
-        "region": "Dunmoor",
+        "region": "North",
         "services": ["electricity", "water"],
     }
 
