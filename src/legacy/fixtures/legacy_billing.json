@@ -4,6 +4,7 @@
     {
       "ACCT_NO": "0900001",
       "PAY_METHOD": "DD",
+      "TARIFF_NAME": "STANDARD VARIABLE",
       "DD_DAY": 5,
       "INVOICES": [
         {

@@ -22,6 +22,21 @@ class UsageMonth(BaseModel):
     estimated: bool
 
 
+class RateChange(BaseModel):
+    label: str  # "Electricity unit rate"
+    unit: str  # "kWh"
+    from_rate: float
+    to_rate: float
+    effective_date: date
+
+
+class BillBalance(BaseModel):
+    previous_balance: float
+    payments_received: float
+    last_payment_date: date | None = None
+    current_balance: float
+
+
 class BillBreakdown(BaseModel):
     bill_id: str
     period_start: date
@@ -35,3 +50,7 @@ class BillBreakdown(BaseModel):
     lines: list[BillLine]
     usage_history: list[UsageMonth]
     change_reasons: list[str]
+    # Optional extras the full breakdown shows.
+    tariff_name: str | None = None
+    rate_changes: list[RateChange] | None = None
+    balance: BillBalance | None = None

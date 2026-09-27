@@ -46,6 +46,7 @@ class TariffEntry(_LegacyRecord):
 class BillingAccount(_LegacyRecord):
     acct_no: str
     pay_method: Literal["DD", "CARD", "CHEQUE"]
+    tariff_name: str
     dd_day: int | None = None
     invoices: list[BillingInvoice]  # newest first
     tariff_history: list[TariffEntry]
