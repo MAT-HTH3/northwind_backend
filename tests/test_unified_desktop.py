@@ -70,7 +70,7 @@ async def test_a_new_case_is_triaged_like_the_desk(
     )
     assert case.expected_response_by == due
     assert case.summary.startswith("Other supply problem, raised in chat.")
-    assert case.status == CaseStatus.OPEN
+    assert case.status == CaseStatus.NEW
 
     message = state["messages"][-1]
     [card] = message.additional_kwargs[UI_CARDS]
