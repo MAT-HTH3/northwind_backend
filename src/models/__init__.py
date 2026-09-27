@@ -6,6 +6,7 @@ Importing this package registers every table on `Base.metadata` (Alembic relies 
 from src.models.conversation import Conversation
 from src.models.reading import UNITS, CustomerReading, ReadingStatus, Service
 from src.models.resolution import ResolutionAnswer
+from src.models.seed import SeedExtra
 from src.models.support_case import (
     CaseConversation,
     CaseSource,
@@ -30,6 +31,7 @@ __all__ = [
     "HeldMessage",
     "ReadingStatus",
     "ResolutionAnswer",
+    "SeedExtra",
     "Service",
     "SupportCase",
     "TimelineEvent",
