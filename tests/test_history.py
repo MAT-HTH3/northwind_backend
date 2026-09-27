@@ -8,7 +8,7 @@ from src.agent.state import history_from
 from src.agent.turns import thread_config, turn_input
 from src.history import UnknownCustomerError, build_history
 from src.legacy import get_legacy_systems
-from src.models import Service, Urgency
+from src.models import ReadingStatus, Service, Urgency
 from src.repositories import ReadingRepository, SupportCaseRepository
 from tests.fakes import fake_context
 
@@ -79,8 +79,9 @@ async def test_our_support_cases_and_readings_are_included(session_factory):
             case_id=open_.id,
             conversation_id="c2",
             service=Service.ELECTRICITY,
-            value=48213,
+            value=41213,
             read_date=date(2026, 9, 26),
+            status=ReadingStatus.NEEDS_REVIEW,
         )
         await session.commit()
 
@@ -91,9 +92,9 @@ async def test_our_support_cases_and_readings_are_included(session_factory):
     assert (by_id[open_.id].status, by_id[open_.id].outcome) == ("open", None)
     [reading] = h.submitted_readings
     assert (reading.value, reading.unit, reading.status, reading.case_id) == (
-        48213,
+        41213,
         "kWh",
-        "awaiting_review",
+        "needs_review",
         open_.id,
     )
 

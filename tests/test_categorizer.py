@@ -29,13 +29,13 @@ async def test_the_llm_decides_when_no_rule_applies():
     assert (result.is_self_service, result.category) == (True, "Billing")
 
 
-async def test_a_meter_reading_is_always_a_meter_reading_review_hand_off():
+async def test_a_meter_reading_is_filed_under_meter_reading():
     reading = MeterReadingMention(service=Service.ELECTRICITY, value=48213)
-    llm = llm_says(is_self_service=True, category="Service", meter_reading=reading)
+    llm = llm_says(category="Service", meter_reading=reading)
 
     result = await categorize(llm, MESSAGES, force_handoff=False)
 
-    assert (result.is_self_service, result.category) == (False, "Meter reading")
+    assert result.category == "Meter reading"  # code accepts it or hands it off (ADR 0004)
     assert result.meter_reading == reading
 
 

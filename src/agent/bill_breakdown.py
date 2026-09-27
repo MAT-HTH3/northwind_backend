@@ -6,6 +6,7 @@ never the LLM's arithmetic.
 
 from datetime import date, timedelta
 
+from src.agent.readings import with_accepted_readings
 from src.history.models import Bill, UnifiedCustomerHistory
 from src.schemas.bill import BillBalance, BillBreakdown, BillLine, RateChange, UsageMonth
 
@@ -21,7 +22,9 @@ class BillNotFoundError(LookupError):
 def build_bill_breakdown(
     history: UnifiedCustomerHistory, month: str | None = None
 ) -> BillBreakdown:
-    """The latest bill, or the one whose period ends in `month` ("YYYY-MM")."""
+    """The latest bill, or the one whose period ends in `month` ("YYYY-MM"). An accepted
+    Customer Reading re-prices the latest bill (ADR 0004)."""
+    history, reading_reasons = with_accepted_readings(history)
     if history.billing is None or not history.billing.bills:
         raise BillNotFoundError("There are no bills to show.")
     bills = history.billing.bills  # newest first
@@ -53,7 +56,8 @@ def build_bill_breakdown(
             for u in history.usage_history
             if u.month <= bill.period_end.strftime("%Y-%m")
         ],
-        change_reasons=change_reasons(history, bill, previous),
+        change_reasons=(reading_reasons if index == 0 else [])
+        + change_reasons(history, bill, previous),
         tariff_name=history.billing.tariff_name,
         rate_changes=rate_changes(history, bill),
         balance=balance(bill, previous),

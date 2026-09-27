@@ -14,15 +14,14 @@ from zoneinfo import ZoneInfo
 from langchain_core.messages import AIMessage, AnyMessage, HumanMessage
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from src.agent.cards import UI_CARDS, case_card, receipt_card
 from src.agent.categories import FALLBACK, Category, subject_for, team_for
 from src.agent.transcript import written_by_code
 from src.history import UnifiedCustomerHistory
-from src.models import CustomerReading, Service, SupportCase, Urgency
+from src.models import CustomerReading, ReadingStatus, Service, SupportCase, Urgency
 from src.repositories import ReadingRepository, SupportCaseRepository
-from src.schemas.cards import MeterReadingReceipt, SupportCaseCard
 from src.triage import Triage, TriageCase, triage_all
 
-UI_CARDS = "ui_cards"  # AIMessage.additional_kwargs key; #20 streams these as tool-call events
 UK = ZoneInfo("Europe/London")  # the customer's calendar, for "reply by" dates
 NEW_CASE = "new"
 
@@ -80,6 +79,7 @@ async def hand_off(
                 service=Service(meter_reading["service"]),
                 value=meter_reading["value"],
                 read_date=today,
+                status=ReadingStatus.NEEDS_REVIEW,
             )
         await session.commit()
     return HandOff(case=case, joined=joined, reading=reading)
@@ -158,23 +158,11 @@ def reply(result: HandOff) -> AIMessage:
     if result.reading is not None:
         r = result.reading
         parts.append(
-            f"Thanks, I've recorded your {r.service.value} reading of **{r.value:,} {r.unit}**. "
-            f"A billing specialist will check it and send you a corrected bill if one is needed."
+            f"Thanks for your {r.service.value} reading of **{r.value:,} {r.unit}**. It doesn't "
+            f"match what we'd expect from your meter, so a person needs to check it before it "
+            f"changes your bill."
         )
-        cards.append(
-            {
-                "name": "submit_meter_reading",
-                "args": {"service": r.service.value, "value": r.value},
-                "result": MeterReadingReceipt(
-                    reading_id=r.id,
-                    service=r.service.value,
-                    value=r.value,
-                    unit=r.unit,
-                    read_date=r.read_date,
-                    status=r.status.value,
-                ).model_dump(mode="json"),
-            }
-        )
+        cards.append(receipt_card(r, revised_amount_due=None))
 
     if result.joined:
         parts.append(
@@ -187,21 +175,7 @@ def reply(result: HandOff) -> AIMessage:
             f"need to explain it again. Your case number is **{case.id}** and they'll reply by "
             f"**{due}**."
         )
-    cards.append(
-        {
-            "name": "create_support_case",
-            "args": {},
-            "result": SupportCaseCard(
-                case_id=case.id,
-                category=case.category,
-                priority=case.priority.value,
-                sla_days=case.sla_days,
-                queue=case.queue,
-                expected_response_by=case.expected_response_by,
-                summary=case.summary,
-            ).model_dump(mode="json"),
-        }
-    )
+    cards.append(case_card(case))
     return written_by_code("\n\n".join(parts), **{UI_CARDS: cards})
 
 

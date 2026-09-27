@@ -280,4 +280,5 @@ def _reading(r: CustomerReading) -> SubmittedReading:
         read_date=r.read_date,
         status=r.status.value,
         case_id=r.case_id,
+        read_at=r.created_at,
     )

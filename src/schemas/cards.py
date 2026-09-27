@@ -8,15 +8,16 @@ from pydantic import BaseModel
 
 
 class MeterReadingReceipt(BaseModel):
-    """submit_meter_reading. Every reading is reviewed by a Human Agent, so there is no
-    revised amount."""
+    """submit_meter_reading. A plausible reading is accepted and re-prices the bill; an
+    implausible one needs review and has no revised amount (ADR 0004)."""
 
     reading_id: str
     service: Literal["electricity", "water"]
     value: int
     unit: str
     read_date: date
-    status: Literal["awaiting_review"]
+    status: Literal["accepted", "needs_review"]
+    revised_amount_due: float | None = None
 
 
 class SupportCaseCard(BaseModel):

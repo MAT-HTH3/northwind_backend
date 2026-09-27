@@ -1,7 +1,8 @@
 """The support graph. Runs once per chat message; thread_id = conversation_id.
 
-START → Analyzer → Categorizer → Router ─self-service→ Auto-Resolver → END
-                                        └─hand-off──→ Unified Desktop → Wait ⏸
+START → Analyzer → Categorizer → Router ─plausible reading→ Accept reading → END
+                                        ├─self-service─────→ Auto-Resolver ⇄ tools → END
+                                        └─hand-off─────────→ Unified Desktop → Wait ⏸
 Wait ─customer message→ Acknowledge → Wait ⏸
 Wait ─Case Outcome────→ Close → END
 """
@@ -23,6 +24,7 @@ def build_graph(checkpointer: BaseCheckpointSaver) -> CompiledStateGraph:
 
     graph.add_node("analyzer", nodes.analyzer)
     graph.add_node("categorizer", nodes.categorizer)
+    graph.add_node("accept_reading", nodes.accept_reading)
     graph.add_node("auto_resolver", nodes.auto_resolver)
     # A missing bill goes back to Gemini as the tool result (listing the real bills), not a crash.
     graph.add_node(
@@ -38,6 +40,7 @@ def build_graph(checkpointer: BaseCheckpointSaver) -> CompiledStateGraph:
     graph.add_conditional_edges("categorizer", nodes.route_after_categorizer)
     graph.add_conditional_edges("auto_resolver", nodes.route_after_auto_resolver)
     graph.add_edge("resolver_tools", "auto_resolver")
+    graph.add_edge("accept_reading", END)
     graph.add_edge("unified_desktop", "wait")
     graph.add_edge("acknowledge", "wait")
     graph.add_edge("close", END)

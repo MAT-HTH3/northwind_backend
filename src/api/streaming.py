@@ -25,7 +25,7 @@ from src.agent.unified_desktop import UI_CARDS
 logger = logging.getLogger(__name__)
 
 STREAMED_LLM_NODE = "auto_resolver"
-FIXED_TEXT_NODES = {"unified_desktop", "acknowledge"}
+FIXED_TEXT_NODES = {"unified_desktop", "acknowledge", "accept_reading"}
 TOOL_NODE = "resolver_tools"
 
 CUSTOMER_SAFE_ERROR = (

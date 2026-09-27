@@ -1,8 +1,8 @@
 """The Categorizer: is this message a Self-service request or a Hand-off request?
 
 Gemini classifies the conversation text alone: it never sees account records (ADR 0003). Code
-then applies the rules the LLM may not overrule (ADR 0002 and the "No" answer to "Did this solve
-your problem?") and keeps the subject consistent with the category.
+then applies the rules the LLM may not overrule and keeps the subject consistent with the
+category. Whether a meter reading is accepted is decided by code afterwards (ADR 0004).
 """
 
 import logging
@@ -64,12 +64,12 @@ Self-service (is_self_service = true), the AI Assistant can resolve these:
 Hand-off (is_self_service = false), these need a Human Agent:
 - a physical repair or supply problem (no power, no water, leaks, damaged meter)
 - a manual billing exception: refund, dispute, payment plan or arrangement, write-off
-- the customer gives a meter reading
 - the customer asks for a person, or says the AI Assistant has not solved their problem
 
 Also:
 - category and subject: the closest topic and case title, even for self-service messages.
-- meter_reading: fill it only when the customer states the number on their meter display.
+- meter_reading: fill it only when the customer states the number on their meter display. The \
+system checks the reading itself, so is_self_service does not matter for it.
   Bill amounts, kWh on a bill, account numbers and phone numbers are not meter readings.
 - disputed_amount: only a sum of money the customer says is wrong or wants back.
 - reason: one short sentence.
@@ -87,8 +87,7 @@ async def categorize(
 ) -> Categorization:
     """Classify, then enforce the rules the LLM may not overrule:
 
-    - a meter reading always goes to a Human Agent, in the Meter reading category (ADR 0002;
-      #36 changes this to ADR 0004)
+    - a meter reading is in the Meter reading category (code then accepts it or hands it off)
     - after the customer answers "No" (force_handoff), the message always goes to a Human Agent
 
     If Gemini fails while one of those rules applies, the hand-off still happens.
@@ -108,12 +107,8 @@ async def categorize(
 
     if result.meter_reading is not None:
         result = result.model_copy(
-            update={
-                "is_self_service": False,
-                "category": METER_READING,
-                "subject": "Reading needs checking",
-            }
+            update={"category": METER_READING, "subject": "Reading needs checking"}
         )
-    elif force_handoff:
+    if force_handoff:
         result = result.model_copy(update={"is_self_service": False})
     return result.model_copy(update={"subject": subject_for(result.category, result.subject)})
