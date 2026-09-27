@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.agent import default_context
 from src.agent.checkpointer import open_checkpointer
 from src.agent.graph import build_graph
-from src.api.routes import customers, health
+from src.api.routes import chat, customers, health
 from src.core.config import get_settings
 from src.core.db import engine
 
@@ -34,6 +34,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router, prefix="/api")
     app.include_router(customers.router, prefix="/api")
+    app.include_router(chat.router, prefix="/api")
     return app
 
 
