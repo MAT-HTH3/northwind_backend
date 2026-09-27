@@ -4,6 +4,7 @@ Messages carry no timestamps, so each one takes the time of the first checkpoint
 Cards shown to the customer become "system" lines written by code.
 """
 
+import re
 from datetime import datetime
 
 from langchain_core.messages import AIMessage, AnyMessage, HumanMessage, ToolMessage
@@ -53,6 +54,11 @@ def _entries(message: AnyMessage, at: datetime | None) -> list[TranscriptEntry]:
             if card["name"] in CARD_LINES
         ]
         if message.text:
-            entries.append(TranscriptEntry(role="assistant", text=message.text, at=at))
+            entries.append(TranscriptEntry(role="assistant", text=plain(message.text), at=at))
         return entries
     return []
+
+
+def plain(text: str) -> str:
+    """The widget renders markdown; the desk shows text as it is, so drop the bold markers."""
+    return re.sub(r"\*\*(.+?)\*\*", r"\1", text)

@@ -124,7 +124,9 @@ async def update_case(case_id: str, body: CaseUpdate, graph: Graph, context: Con
     async with context.session_factory() as session:
         repo = SupportCaseRepository(session)
         case = await _get_case(repo, case_id)
-        released = await repo.update(case, changes, actor=body.assignee or "Human Agent")
+        # The desk sends no author, so credit the change to whoever the case is assigned to.
+        actor = body.assignee or case.assignee or "Human Agent"
+        released = await repo.update(case, changes, actor=actor)
         outcome = case.outcome
         await session.commit()
         result = records.agent_case(case)
